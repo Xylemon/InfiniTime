@@ -60,6 +60,21 @@ WatchFaceStarTrek::WatchFaceStarTrek(DisplayApp* app,
     font_time = &jetbrains_mono_extrabold_compressed;
   }
 
+  if (filesystem.FileOpen(&f, "/images/startrek_bracket_left.bin", LFS_O_RDONLY) >= 0) {
+    filesystem.FileClose(&f);
+    img_bracketLeft = lv_img_create(lv_scr_act(), NULL);
+    lv_img_set_src(img_bracketLeft, "F:/images/startrek_bracket_left.bin");
+  } else {
+    img_bracketLeft = rect(17, 40, 109, 180, COLOR_BLACK);
+  }
+  if (filesystem.FileOpen(&f, "/images/startrek_bracket_right.bin", LFS_O_RDONLY) >= 0) {
+    filesystem.FileClose(&f);
+    img_bracketRight = lv_img_create(lv_scr_act(), NULL);
+    lv_img_set_src(img_bracketRight, "F:/images/startrek_bracket_right.bin");
+  } else {
+    img_bracketRight = rect(17, 40, 216, 180, COLOR_BLACK);
+  }
+
   // draw background
   // grid organizing stuff
   const uint8_t gap = 3, cellheight = 26, upperend = 80;
@@ -101,12 +116,10 @@ WatchFaceStarTrek::WatchFaceStarTrek(DisplayApp* app,
   bar1 = rect(4, cellheight, 27, upperend - cellheight, COLOR_ORANGE);
   bar1 = rect(4, cellheight, 20, upperend - cellheight, COLOR_DARKGRAY);
   // brackets
-  img_bracketLeft = lv_img_create(lv_scr_act(), NULL);
-  lv_img_set_src(img_bracketLeft, "F:/images/startrek_bracket_left.bin");
   lv_obj_set_pos(img_bracketLeft, 109, 180);
-  img_bracketRight = lv_img_create(lv_scr_act(), NULL);
-  lv_img_set_src(img_bracketRight, "F:/images/startrek_bracket_right.bin");
+  lv_obj_move_foreground(img_bracketLeft);
   lv_obj_set_pos(img_bracketRight, 216, 180);
+  lv_obj_move_foreground(img_bracketRight);
 
   // put info on background
   batteryIcon.Create(lv_scr_act());
