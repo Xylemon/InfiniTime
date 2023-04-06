@@ -62,7 +62,7 @@
    "edge_of_the_galaxy" : {
       "sources": [
          {
-            "file": "fonts/EdgeOfTheGalaxyRegular.otf",
+            "file": "fonts/EdgeOfTheGalaxyRegular.ttf",
             "symbols": "1234567890"
          }
       ],
