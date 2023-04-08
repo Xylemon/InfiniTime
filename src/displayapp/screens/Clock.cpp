@@ -137,8 +137,7 @@ std::unique_ptr<Screen> Clock::WatchFaceCasioStyleG7710() {
 }
 
 std::unique_ptr<Screen> Clock::WatchFaceStarTrekScreen() {
-  return std::make_unique<Screens::WatchFaceStarTrek>(app,
-                                                      dateTimeController,
+  return std::make_unique<Screens::WatchFaceStarTrek>(dateTimeController,
                                                       batteryController,
                                                       bleController,
                                                       notificationManager,

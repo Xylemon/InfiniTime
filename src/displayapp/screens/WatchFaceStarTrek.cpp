@@ -1,6 +1,5 @@
 #include "displayapp/screens/WatchFaceStarTrek.h"
 
-#include <date/date.h>
 #include <lvgl/lvgl.h>
 #include <cstdio>
 #include "displayapp/screens/BatteryIcon.h"
@@ -33,17 +32,16 @@ using namespace Pinetime::Applications::Screens;
 #define COLOR_BLACK     lv_color_hex(0x000000)
 #define COLOR_WHITE     lv_color_hex(0xffffff)
 
-WatchFaceStarTrek::WatchFaceStarTrek(DisplayApp* app,
-                                     Controllers::DateTime& dateTimeController,
-                                     Controllers::Battery& batteryController,
-                                     Controllers::Ble& bleController,
+WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
+                                     const Controllers::Battery& batteryController,
+                                     const Controllers::Ble& bleController,
                                      Controllers::NotificationManager& notificatioManager,
                                      Controllers::Settings& settingsController,
                                      Controllers::HeartRateController& heartRateController,
                                      Controllers::MotionController& motionController,
                                      Controllers::FS& filesystem)
-  : Screen(app),
-    currentDateTime {{}},
+  : currentDateTime {{}},
+    batteryIcon(false),
     dateTimeController {dateTimeController},
     batteryController {batteryController},
     bleController {bleController},
@@ -248,19 +246,12 @@ void WatchFaceStarTrek::Refresh() {
   currentDateTime = dateTimeController.CurrentDateTime();
 
   if (currentDateTime.IsUpdated()) {
-    auto newDateTime = currentDateTime.Get();
-
-    auto dp = date::floor<date::days>(newDateTime);
-    auto time = date::make_time(newDateTime - dp);
-    auto yearMonthDay = date::year_month_day(dp);
-
-    auto year = static_cast<int>(yearMonthDay.year());
-    auto month = static_cast<Pinetime::Controllers::DateTime::Months>(static_cast<unsigned>(yearMonthDay.month()));
-    auto day = static_cast<unsigned>(yearMonthDay.day());
-    auto dayOfWeek = static_cast<Pinetime::Controllers::DateTime::Days>(date::weekday(yearMonthDay).iso_encoding());
-
-    uint8_t hour = time.hours().count();
-    uint8_t minute = time.minutes().count();
+    auto hour = dateTimeController.Hours();
+    auto minute = dateTimeController.Minutes();
+    auto year = dateTimeController.Year();
+    auto month = dateTimeController.Month();
+    auto dayOfWeek = dateTimeController.DayOfWeek();
+    auto day = dateTimeController.Day();
 
     if (displayedHour != hour || displayedMinute != minute) {
       displayedHour = hour;
