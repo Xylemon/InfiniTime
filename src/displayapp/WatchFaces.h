@@ -9,6 +9,7 @@ namespace Pinetime {
       Terminal = 3,
       Infineat = 4,
       CasioStyleG7710 = 5,
+      StarTrek = 6,
     };
   }
 }

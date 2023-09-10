@@ -56,7 +56,7 @@ Clock::Clock(Controllers::DateTime& dateTimeController,
         case WatchFace::CasioStyleG7710:
           return WatchFaceCasioStyleG7710();
           break;
-        case 6:
+        case WatchFace::StarTrek:
           return WatchFaceStarTrekScreen();
           break;
       }
