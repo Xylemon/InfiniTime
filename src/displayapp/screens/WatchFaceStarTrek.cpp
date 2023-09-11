@@ -14,23 +14,23 @@
 #include "components/settings/Settings.h"
 using namespace Pinetime::Applications::Screens;
 
-#define COLOR_TIME          lv_color_hex(0x83ddff) // LIGHTBLUE
-#define COLOR_DATE          lv_color_hex(0x222222)
-#define COLOR_ICONS         lv_color_hex(0x111111)
-#define COLOR_HEARTBEAT_ON  lv_color_hex(0xff4f10)
-#define COLOR_HEARTBEAT_OFF lv_color_hex(0x3786ff) // BLUE
-#define COLOR_STEPS         lv_color_hex(0xada88b) // BEIGE
-#define COLOR_BG            lv_color_hex(0x000000) // BLACK
+constexpr lv_color_t COLOR_LIGHTBLUE = LV_COLOR_MAKE(0x83, 0xdd, 0xff);
+constexpr lv_color_t COLOR_DARKBLUE = LV_COLOR_MAKE(0x09, 0x46, 0xee);
+constexpr lv_color_t COLOR_BLUE = LV_COLOR_MAKE(0x37, 0x86, 0xff);
+constexpr lv_color_t COLOR_ORANGE = LV_COLOR_MAKE(0xd4, 0x5f, 0x10);
+constexpr lv_color_t COLOR_DARKGRAY = LV_COLOR_MAKE(0x48, 0x60, 0x6c);
+constexpr lv_color_t COLOR_BEIGE = LV_COLOR_MAKE(0xad, 0xa8, 0x8b);
+constexpr lv_color_t COLOR_BROWN = LV_COLOR_MAKE(0x64, 0x44, 0x00);
+constexpr lv_color_t COLOR_BLACK = LV_COLOR_MAKE(0x00, 0x00, 0x00);
+constexpr lv_color_t COLOR_WHITE = LV_COLOR_MAKE(0xff, 0xff, 0xff);
 
-#define COLOR_LIGHTBLUE lv_color_hex(0x83ddff)
-#define COLOR_DARKBLUE  lv_color_hex(0x0946ee)
-#define COLOR_BLUE      lv_color_hex(0x3786ff)
-#define COLOR_ORANGE    lv_color_hex(0xd45f10)
-#define COLOR_DARKGRAY  lv_color_hex(0x48606c)
-#define COLOR_BEIGE     lv_color_hex(0xada88b)
-#define COLOR_BROWN     lv_color_hex(0x644400)
-#define COLOR_BLACK     lv_color_hex(0x000000)
-#define COLOR_WHITE     lv_color_hex(0xffffff)
+constexpr lv_color_t COLOR_TIME = COLOR_LIGHTBLUE;
+constexpr lv_color_t COLOR_DATE = LV_COLOR_MAKE(0x22, 0x22, 0x22);
+constexpr lv_color_t COLOR_ICONS = LV_COLOR_MAKE(0x11, 0x11, 0x11);
+constexpr lv_color_t COLOR_HEARTBEAT_ON = LV_COLOR_MAKE(0xff, 0x4f, 0x10);
+constexpr lv_color_t COLOR_HEARTBEAT_OFF = COLOR_BLUE;
+constexpr lv_color_t COLOR_STEPS = COLOR_BEIGE;
+constexpr lv_color_t COLOR_BG = COLOR_BLACK;
 
 WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
                                      const Controllers::Battery& batteryController,
@@ -58,27 +58,34 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
     font_time = &jetbrains_mono_extrabold_compressed;
   }
 
-  if (filesystem.FileOpen(&f, "/images/startrek_bracket_left.bin", LFS_O_RDONLY) >= 0) {
-    filesystem.FileClose(&f);
-    img_bracketLeft = lv_img_create(lv_scr_act(), NULL);
-    lv_img_set_src(img_bracketLeft, "F:/images/startrek_bracket_left.bin");
-  } else {
-    img_bracketLeft = rect(17, 40, 109, 180, COLOR_BLACK);
-  }
-  if (filesystem.FileOpen(&f, "/images/startrek_bracket_right.bin", LFS_O_RDONLY) >= 0) {
-    filesystem.FileClose(&f);
-    img_bracketRight = lv_img_create(lv_scr_act(), NULL);
-    lv_img_set_src(img_bracketRight, "F:/images/startrek_bracket_right.bin");
-  } else {
-    img_bracketRight = rect(17, 40, 216, 180, COLOR_BLACK);
-  }
+  // definitions of gaps and sizes
+  // with the future vision to make this all canvas size independent :)
+  // -- list for date and stuff
+  constexpr uint8_t gap = 3;
+  constexpr uint8_t cellheight = 26;
+  constexpr uint8_t cellwidth = 72;
+  constexpr uint8_t cells_x = 34;
+  constexpr uint8_t cpg = cellheight + gap;
+  // -- end of upper stuff (all magic numbers at the moment)
+  constexpr uint8_t upperend = 80; // the upper arch shape portion ends at this y
+  constexpr uint8_t upg = upperend + gap;
+  // -- icon spaces
+  constexpr uint8_t iconrectwidth = 17; // icon space consists of a rect and a circ
+  constexpr uint8_t iconrect_x = 14;
+  constexpr uint8_t icon_x = 0;
+  // -- decorative bars
+  constexpr uint8_t bar_y = upperend - cellheight;
+  constexpr uint8_t barwidth = 4;
+  constexpr uint8_t bargap = 7;
+  // -- precomputed distances
+  constexpr uint8_t listdistance2 = upg + cpg;
+  constexpr uint8_t listdistance3 = upg + 2 * cpg;
+  constexpr uint8_t listdistance4 = upg + 3 * cpg;
+  constexpr uint8_t bar1_x = cells_x - bargap;
+  constexpr uint8_t bar2_x = cells_x - 2 * bargap;
+  // -- end of list part (back to magic numbers below this)
+  constexpr uint8_t listend = upperend + 4 * cellheight + 5 * gap;
 
-  // draw background
-  // grid organizing stuff
-  const uint8_t gap = 3, cellheight = 26, upperend = 80;
-  const uint8_t cpg = cellheight + gap;
-  const uint8_t upg = upperend + gap;
-  const uint8_t listend = upperend + 4 * cellheight + 5 * gap;
   // upper
   topRightRect = rect(84, 11, 156, 0, COLOR_DARKGRAY);
   upperShapeRect1 = rect(85, 11, 68, 0, COLOR_BLUE);
@@ -97,27 +104,81 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
   lowerShapeRect4 = rect(14, 14, 106, 215, COLOR_BLUE);
   lowerShapeCirc2 = circ(28, 106, 201, COLOR_BG);
   // date list
-  dateRect1 = rect(72, cellheight, 34, upg, COLOR_BEIGE);
-  dateRect2 = rect(72, cellheight, 34, upg + cpg, COLOR_ORANGE);
-  dateRect3 = rect(72, cellheight, 34, upg + 2 * cpg, COLOR_LIGHTBLUE);
-  dateRect4 = rect(72, cellheight, 34, upg + 3 * cpg, COLOR_DARKGRAY);
+  dateRect1 = rect(cellwidth, cellheight, cells_x, upg, COLOR_BEIGE);
+  dateRect2 = rect(cellwidth, cellheight, cells_x, listdistance2, COLOR_ORANGE);
+  dateRect3 = rect(cellwidth, cellheight, cells_x, listdistance3, COLOR_LIGHTBLUE);
+  dateRect4 = rect(cellwidth, cellheight, cells_x, listdistance4, COLOR_DARKGRAY);
   // icon list
-  iconRect1 = rect(17, cellheight, 14, upg, COLOR_LIGHTBLUE);
-  iconRect2 = rect(17, cellheight, 14, upg + cpg, COLOR_BEIGE);
-  iconRect3 = rect(17, cellheight, 14, upg + 2 * cpg, COLOR_BROWN);
-  iconRect4 = rect(17, cellheight, 14, upg + 3 * cpg, COLOR_DARKBLUE);
-  iconCirc1 = circ(cellheight, 0, upg, COLOR_LIGHTBLUE);
-  iconCirc2 = circ(cellheight, 0, upg + cpg, COLOR_BEIGE);
-  iconCirc3 = circ(cellheight, 0, upg + 2 * cpg, COLOR_BROWN);
-  iconCirc4 = circ(cellheight, 0, upg + 3 * cpg, COLOR_DARKBLUE);
+  iconRect1 = rect(iconrectwidth, cellheight, iconrect_x, upg, COLOR_LIGHTBLUE);
+  iconRect2 = rect(iconrectwidth, cellheight, iconrect_x, listdistance2, COLOR_BEIGE);
+  iconRect3 = rect(iconrectwidth, cellheight, iconrect_x, listdistance3, COLOR_BROWN);
+  iconRect4 = rect(iconrectwidth, cellheight, iconrect_x, listdistance4, COLOR_DARKBLUE);
+  iconCirc1 = circ(cellheight, icon_x, upg, COLOR_LIGHTBLUE);
+  iconCirc2 = circ(cellheight, icon_x, listdistance2, COLOR_BEIGE);
+  iconCirc3 = circ(cellheight, icon_x, listdistance3, COLOR_BROWN);
+  iconCirc4 = circ(cellheight, icon_x, listdistance4, COLOR_DARKBLUE);
   // bars
-  bar1 = rect(4, cellheight, 27, upperend - cellheight, COLOR_ORANGE);
-  bar1 = rect(4, cellheight, 20, upperend - cellheight, COLOR_DARKGRAY);
-  // brackets
-  lv_obj_set_pos(img_bracketLeft, 109, 180);
-  lv_obj_move_foreground(img_bracketLeft);
-  lv_obj_set_pos(img_bracketRight, 216, 180);
-  lv_obj_move_foreground(img_bracketRight);
+  bar1 = rect(barwidth, cellheight, bar1_x, bar_y, COLOR_ORANGE);
+  bar2 = rect(barwidth, cellheight, bar2_x, bar_y, COLOR_DARKGRAY);
+
+  // small brackets
+  // -- global location
+  constexpr uint8_t bracket_y = 182;
+  constexpr uint8_t leftbracket_x = 109;
+  constexpr uint8_t rightbracket_x = 237;
+  constexpr uint8_t bgap = 1;
+  // -- dimensions of shapes
+  constexpr uint8_t bracketrect1_w = 9;
+  constexpr uint8_t bracketrect1_h = 3;
+  constexpr uint8_t bracketrect2_h = 9;
+  constexpr uint8_t vertical_w = 4;
+  constexpr uint8_t smallrect_h = 6;
+  constexpr uint8_t largerect_h = 22;
+  constexpr uint8_t stickout_w = 3;
+  constexpr uint8_t stickout_h = 4;
+  constexpr uint8_t bcirc_d = 6;
+  constexpr uint8_t scirc_d = 4;
+  constexpr uint8_t bcircshift = 3;
+  constexpr uint8_t scircshift = 4;
+  // -- positions
+  constexpr uint8_t vertical_x = leftbracket_x + vertical_w + bgap;
+  constexpr uint8_t vertical2_x = vertical_x + vertical_w;
+  constexpr uint8_t stickout_y = bracket_y + bracketrect1_h + bgap;
+  constexpr uint8_t largerect_y = stickout_y + stickout_h + bgap;
+  constexpr uint8_t smallrect1_y = bracket_y + bracketrect1_h + bracketrect2_h + bgap;
+  constexpr uint8_t smallrect2_y = smallrect1_y + smallrect_h + bgap;
+  constexpr uint8_t bottom1_y = smallrect2_y + smallrect_h + bgap;
+  constexpr uint8_t stickout2_y = largerect_y + largerect_h + bgap;
+  constexpr uint8_t bottom2_y = bottom1_y + bracketrect2_h;
+  constexpr uint8_t rightvertical_x = rightbracket_x - 2 * vertical_w - bgap;
+
+  bracket1[0] = rect(vertical_w, largerect_h, leftbracket_x, largerect_y, COLOR_DARKBLUE);
+  bracket1[1] = rect(bracketrect1_w, bracketrect1_h, vertical2_x, bracket_y, COLOR_LIGHTBLUE);
+  bracket1[2] = circ(bcirc_d, vertical_x, bracket_y, COLOR_LIGHTBLUE);
+  bracket1[3] = rect(vertical_w, bracketrect2_h, vertical_x, bracket_y + bracketrect1_h, COLOR_LIGHTBLUE);
+  bracket1[4] = circ(scirc_d, vertical2_x, bracket_y + bracketrect1_h, COLOR_BLACK);
+  bracket1[5] = rect(stickout_w, stickout_h, vertical_x - stickout_w, stickout_y, COLOR_LIGHTBLUE);
+  bracket1[6] = rect(vertical_w, smallrect_h, vertical_x, smallrect1_y, COLOR_DARKGRAY);
+  bracket1[7] = rect(vertical_w, smallrect_h, vertical_x, smallrect2_y, COLOR_ORANGE);
+  bracket1[8] = rect(vertical_w, bracketrect2_h, vertical_x, bottom1_y, COLOR_LIGHTBLUE);
+  bracket1[9] = rect(stickout_w, stickout_h, vertical_x - stickout_w, stickout2_y, COLOR_LIGHTBLUE);
+  bracket1[10] = circ(bcirc_d, vertical_x, bottom2_y - bcircshift, COLOR_LIGHTBLUE);
+  bracket1[11] = rect(bracketrect1_w, bracketrect1_h, vertical2_x, bottom2_y, COLOR_LIGHTBLUE);
+  bracket1[12] = circ(scirc_d, vertical2_x, bottom2_y - scircshift, COLOR_BLACK);
+
+  bracket2[0] = rect(vertical_w, largerect_h, rightbracket_x - vertical_w, largerect_y, COLOR_DARKBLUE);
+  bracket2[1] = rect(bracketrect1_w, bracketrect1_h, rightvertical_x - bracketrect1_w, bracket_y, COLOR_LIGHTBLUE);
+  bracket2[2] = circ(bcirc_d, rightvertical_x - bcircshift + 1, bracket_y, COLOR_LIGHTBLUE);
+  bracket2[3] = rect(vertical_w, bracketrect2_h, rightvertical_x, bracket_y + bracketrect1_h, COLOR_LIGHTBLUE);
+  bracket2[4] = circ(scirc_d, rightvertical_x - scirc_d, bracket_y + bracketrect1_h, COLOR_BLACK);
+  bracket2[5] = rect(stickout_w, stickout_h, rightvertical_x + vertical_w, stickout_y, COLOR_LIGHTBLUE);
+  bracket2[6] = rect(vertical_w, smallrect_h, rightvertical_x, smallrect1_y, COLOR_ORANGE);
+  bracket2[7] = rect(vertical_w, smallrect_h, rightvertical_x, smallrect2_y, COLOR_DARKGRAY);
+  bracket2[8] = rect(vertical_w, bracketrect2_h, rightvertical_x, bottom1_y, COLOR_LIGHTBLUE);
+  bracket2[9] = rect(stickout_w, stickout_h, rightvertical_x + vertical_w, stickout2_y, COLOR_LIGHTBLUE);
+  bracket2[10] = circ(bcirc_d, rightvertical_x - bcircshift + 1, bottom2_y - bcircshift, COLOR_LIGHTBLUE);
+  bracket2[11] = rect(bracketrect1_w, bracketrect1_h, rightvertical_x - bracketrect1_w, bottom2_y, COLOR_LIGHTBLUE);
+  bracket2[12] = circ(scirc_d, rightvertical_x - scirc_d, bottom2_y - scircshift, COLOR_BLACK);
 
   // put info on background
   batteryIcon.Create(lv_scr_act());
@@ -198,7 +259,7 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
   stepIcon = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(stepIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_STEPS);
   lv_label_set_text_static(stepIcon, Symbols::shoe);
-  lv_obj_align(stepIcon, img_bracketLeft, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
+  lv_obj_align(stepIcon, bracket1[0], LV_ALIGN_OUT_RIGHT_MID, 13, 0);
 
   stepValue = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_set_style_local_text_color(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_STEPS);
@@ -345,14 +406,6 @@ bool WatchFaceStarTrek::IsAvailable(Pinetime::Controllers::FS& filesystem) {
   lfs_file file = {};
 
   if (filesystem.FileOpen(&file, "/fonts/edge_of_the_galaxy.bin", LFS_O_RDONLY) < 0) {
-    return false;
-  }
-  filesystem.FileClose(&file);
-  if (filesystem.FileOpen(&file, "/images/startrek_bracket_right.bin", LFS_O_RDONLY) < 0) {
-    return false;
-  }
-  filesystem.FileClose(&file);
-  if (filesystem.FileOpen(&file, "/images/startrek_bracket_left.bin", LFS_O_RDONLY) < 0) {
     return false;
   }
   filesystem.FileClose(&file);

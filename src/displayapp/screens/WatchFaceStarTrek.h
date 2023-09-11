@@ -85,9 +85,9 @@ namespace Pinetime {
         lv_obj_t *upperShapeRect1, *upperShapeRect2, *upperShapeRect3, *upperShapeRect4, *upperShapeCirc1, *upperShapeCirc2;
         lv_obj_t *lowerShapeRect1, *lowerShapeRect2, *lowerShapeRect3, *lowerShapeRect4, *lowerShapeCirc1, *lowerShapeCirc2,
           *lowerShapeCircHalfCut;
-        lv_obj_t* img_bracketLeft = nullptr;
-        lv_obj_t* img_bracketRight = nullptr;
         lv_obj_t *minuteAnchor, *hourAnchor;
+        lv_obj_t* bracket1[13];
+        lv_obj_t* bracket2[13];
 
         BatteryIcon batteryIcon;
 
