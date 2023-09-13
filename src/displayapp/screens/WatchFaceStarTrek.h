@@ -35,9 +35,11 @@ namespace Pinetime {
                           Controllers::FS& filesystem);
         ~WatchFaceStarTrek() override;
 
-        void Refresh() override;
+        bool OnTouchEvent(TouchEvents event) override;
+        bool OnButtonPushed() override;
+        void UpdateSelected(lv_obj_t* object, lv_event_t event);
 
-        static bool IsAvailable(Pinetime::Controllers::FS& filesystem);
+        void Refresh() override;
 
       private:
         uint8_t displayedHour = -1;
@@ -47,6 +49,7 @@ namespace Pinetime {
         Controllers::DateTime::Months currentMonth = Pinetime::Controllers::DateTime::Months::Unknown;
         Controllers::DateTime::Days currentDayOfWeek = Pinetime::Controllers::DateTime::Days::Unknown;
         uint8_t currentDay = 0;
+        uint32_t settingsAutoCloseTick = 0;
 
         Utility::DirtyValue<uint8_t> batteryPercentRemaining {};
         Utility::DirtyValue<bool> powerPresent {};
@@ -89,6 +92,10 @@ namespace Pinetime {
         lv_obj_t* bracket1[13];
         lv_obj_t* bracket2[13];
 
+        lv_obj_t* btnClose;
+        lv_obj_t* btnSetUseSystemFont;
+        lv_obj_t* lblSetUseSystemFont;
+
         BatteryIcon batteryIcon;
 
         Controllers::DateTime& dateTimeController;
@@ -104,8 +111,10 @@ namespace Pinetime {
         lv_obj_t* rect(uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);
         lv_obj_t* circ(uint8_t d, uint8_t x, uint8_t y, lv_color_t color);
         lv_obj_t* _base(uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);
+        void updateFontTime();
 
         lv_font_t* font_time = nullptr;
+        bool starTrekFontAvailable = false;
       };
     }
   }

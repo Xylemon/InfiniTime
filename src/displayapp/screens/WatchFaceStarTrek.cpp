@@ -32,6 +32,18 @@ constexpr lv_color_t COLOR_HEARTBEAT_OFF = COLOR_BLUE;
 constexpr lv_color_t COLOR_STEPS = COLOR_BEIGE;
 constexpr lv_color_t COLOR_BG = COLOR_BLACK;
 
+// watch out for sizes !
+constexpr char WANT_SYSTEM_FONT[12] = "System font";
+constexpr char WANT_ST_FONT[15] = "Star Trek font";
+constexpr char WANT_ST_FONT_BUT_NO[14] = "Not installed";
+
+namespace {
+  void event_handler(lv_obj_t* obj, lv_event_t event) {
+    auto* screen = static_cast<WatchFaceStarTrek*>(obj->user_data);
+    screen->UpdateSelected(obj, event);
+  }
+}
+
 WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
                                      const Controllers::Battery& batteryController,
                                      const Controllers::Ble& bleController,
@@ -53,9 +65,16 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
   lfs_file f = {};
   if (filesystem.FileOpen(&f, "/fonts/edge_of_the_galaxy.bin", LFS_O_RDONLY) >= 0) {
     filesystem.FileClose(&f);
-    font_time = lv_font_load("F:/fonts/edge_of_the_galaxy.bin");
-  } else {
+    starTrekFontAvailable = true;
+  }
+  if (settingsController.getStarTrekUseSystemFont()) {
     font_time = &jetbrains_mono_extrabold_compressed;
+  } else {
+    if (starTrekFontAvailable) {
+      font_time = lv_font_load("F:/fonts/edge_of_the_galaxy.bin");
+    } else {
+      font_time = &jetbrains_mono_extrabold_compressed;
+    }
   }
 
   // definitions of gaps and sizes
@@ -266,6 +285,29 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
   lv_label_set_text_static(stepValue, "0");
   lv_obj_align(stepValue, stepIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
 
+  // menu buttons
+  btnClose = lv_btn_create(lv_scr_act(), nullptr);
+  btnClose->user_data = this;
+  lv_obj_set_size(btnClose, 200, 60);
+  lv_obj_align(btnClose, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, -15);
+  lv_obj_set_style_local_bg_opa(btnClose, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_70);
+  lv_obj_t* lblClose = lv_label_create(btnClose, nullptr);
+  lv_label_set_text_static(lblClose, "X");
+  lv_obj_set_event_cb(btnClose, event_handler);
+  lv_obj_set_hidden(btnClose, true);
+
+  btnSetUseSystemFont = lv_btn_create(lv_scr_act(), nullptr);
+  btnSetUseSystemFont->user_data = this;
+  lv_obj_set_size(btnSetUseSystemFont, 200, 60);
+  lv_obj_align(btnSetUseSystemFont, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 15);
+  lv_obj_set_style_local_bg_opa(btnSetUseSystemFont, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_70);
+  const char* label_sysfont =
+    settingsController.getStarTrekUseSystemFont() ? WANT_SYSTEM_FONT : (starTrekFontAvailable ? WANT_ST_FONT : WANT_ST_FONT_BUT_NO);
+  lblSetUseSystemFont = lv_label_create(btnSetUseSystemFont, nullptr);
+  lv_label_set_text_static(lblSetUseSystemFont, label_sysfont);
+  lv_obj_set_event_cb(btnSetUseSystemFont, event_handler);
+  lv_obj_set_hidden(btnSetUseSystemFont, true);
+
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
   Refresh();
 }
@@ -273,7 +315,7 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
 WatchFaceStarTrek::~WatchFaceStarTrek() {
   lv_task_del(taskRefresh);
 
-  if (font_time != nullptr) {
+  if (!settingsController.getStarTrekUseSystemFont() && font_time != nullptr) {
     lv_font_free(font_time);
   }
 
@@ -380,6 +422,14 @@ void WatchFaceStarTrek::Refresh() {
     lv_label_set_text_fmt(stepValue, "%lu", stepCount.Get());
     lv_obj_realign(stepValue);
   }
+
+  if (!lv_obj_get_hidden(btnClose)) {
+    if ((settingsAutoCloseTick > 0) && (lv_tick_get() - settingsAutoCloseTick > 5000)) {
+      lv_obj_set_hidden(btnClose, true);
+      lv_obj_set_hidden(btnSetUseSystemFont, true);
+      settingsAutoCloseTick = 0;
+    }
+  }
 }
 
 lv_obj_t* WatchFaceStarTrek::rect(uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color) {
@@ -402,13 +452,76 @@ lv_obj_t* WatchFaceStarTrek::_base(uint8_t w, uint8_t h, uint8_t x, uint8_t y, l
   return base;
 }
 
-bool WatchFaceStarTrek::IsAvailable(Pinetime::Controllers::FS& filesystem) {
-  lfs_file file = {};
+void WatchFaceStarTrek::updateFontTime() {
+  lv_obj_set_style_local_text_font(label_time_hour_1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
+  lv_obj_align(label_time_hour_1, hourAnchor, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
+  lv_obj_set_style_local_text_font(label_time_hour_10, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
+  lv_obj_align(label_time_hour_10, hourAnchor, LV_ALIGN_OUT_LEFT_MID, -2, 0);
+  lv_obj_set_style_local_text_font(label_time_min_1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
+  lv_obj_align(label_time_min_1, minuteAnchor, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
+  lv_obj_set_style_local_text_font(label_time_min_10, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
+  lv_obj_align(label_time_min_10, minuteAnchor, LV_ALIGN_OUT_LEFT_MID, -2, 0);
+}
 
-  if (filesystem.FileOpen(&file, "/fonts/edge_of_the_galaxy.bin", LFS_O_RDONLY) < 0) {
-    return false;
+bool WatchFaceStarTrek::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
+  if ((event == Pinetime::Applications::TouchEvents::LongTap) && lv_obj_get_hidden(btnClose)) {
+    lv_obj_set_hidden(btnClose, false);
+    lv_obj_set_hidden(btnSetUseSystemFont, false);
+    settingsAutoCloseTick = lv_tick_get();
+    return true;
   }
-  filesystem.FileClose(&file);
+  if ((event == Pinetime::Applications::TouchEvents::DoubleTap) && (lv_obj_get_hidden(btnClose) == false)) {
+    return true;
+  }
+  return false;
+}
 
-  return true;
+bool WatchFaceStarTrek::OnButtonPushed() {
+  if (!lv_obj_get_hidden(btnClose)) {
+    lv_obj_set_hidden(btnClose, true);
+    lv_obj_set_hidden(btnSetUseSystemFont, true);
+    return true;
+  }
+  return false;
+}
+
+void WatchFaceStarTrek::UpdateSelected(lv_obj_t* object, lv_event_t event) {
+  if (event == LV_EVENT_CLICKED) {
+
+    settingsAutoCloseTick = lv_tick_get();
+
+    if (object == btnClose) {
+      lv_obj_set_hidden(btnClose, true);
+      lv_obj_set_hidden(btnSetUseSystemFont, true);
+    }
+
+    if (object == btnSetUseSystemFont) {
+      bool usedSystem = settingsController.getStarTrekUseSystemFont();
+      // ST font was not used and shall be used now
+      if (starTrekFontAvailable && usedSystem) {
+        lv_label_set_text_static(lblSetUseSystemFont, WANT_ST_FONT);
+        font_time = lv_font_load("F:/fonts/edge_of_the_galaxy.bin");
+        // give font time to be loaded, this can possibly be lowered
+        vTaskDelay(100);
+        updateFontTime();
+        usedSystem = false;
+      }
+      // ST font was used and gets deactivated
+      else if (starTrekFontAvailable && !usedSystem) {
+        lv_label_set_text_static(lblSetUseSystemFont, WANT_SYSTEM_FONT);
+        if (font_time != nullptr) {
+          lv_font_free(font_time);
+        }
+        font_time = &jetbrains_mono_extrabold_compressed;
+        updateFontTime();
+        usedSystem = true;
+      }
+      // ST font was not used, shall be used now, but is not available
+      // ST font should be used by default but is not installed
+      else {
+        lv_label_set_text_static(lblSetUseSystemFont, WANT_ST_FONT_BUT_NO);
+      }
+      settingsController.setStarTrekUseSystemFont(usedSystem);
+    }
+  }
 }

@@ -49,6 +49,10 @@ namespace Pinetime {
         int colorIndex = 0;
       };
 
+      struct WatchFaceStarTrek {
+        bool useSystemFont = false;
+      };
+
       Settings(Pinetime::Controllers::FS& fs);
 
       Settings(const Settings&) = delete;
@@ -151,6 +155,17 @@ namespace Pinetime {
 
       PTSWeather GetPTSWeather() const {
         return settings.PTS.weatherEnable;
+      };
+
+      bool getStarTrekUseSystemFont() const {
+        return settings.watchFaceStarTrek.useSystemFont;
+      };
+
+      void setStarTrekUseSystemFont(bool useSystemFont) {
+        if (useSystemFont != settings.watchFaceStarTrek.useSystemFont) {
+          settings.watchFaceStarTrek.useSystemFont = useSystemFont;
+          settingsChanged = true;
+        }
       };
 
       void SetAppMenu(uint8_t menu) {
@@ -290,6 +305,8 @@ namespace Pinetime {
         PineTimeStyle PTS;
 
         WatchFaceInfineat watchFaceInfineat;
+
+        WatchFaceStarTrek watchFaceStarTrek;
 
         std::bitset<5> wakeUpMode {0};
         uint16_t shakeWakeThreshold = 150;

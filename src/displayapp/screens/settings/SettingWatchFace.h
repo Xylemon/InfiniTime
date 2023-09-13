@@ -48,7 +48,7 @@ namespace Pinetime {
            {"Terminal", true},
            {"Infineat face", Applications::Screens::WatchFaceInfineat::IsAvailable(filesystem)},
            {"Casio G7710", Applications::Screens::WatchFaceCasioStyleG7710::IsAvailable(filesystem)},
-           {"Star Trek", Applications::Screens::WatchFaceStarTrek::IsAvailable(filesystem)},
+           {"Star Trek", true},
            {"", false}}};
         ScreenList<nScreens> screens;
       };
