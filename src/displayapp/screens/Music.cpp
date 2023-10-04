@@ -127,6 +127,8 @@ Music::Music(Pinetime::Controllers::MusicService& music) : musicService(music) {
   lv_obj_set_width(txtTrack, LV_HOR_RES - 12);
   lv_label_set_text_static(txtTrack, "This is a very long getTrack name");
 
+  page1Indicator.Create();
+
   /** Init animation */
   imgDisc = lv_img_create(lv_scr_act(), nullptr);
   lv_img_set_src_arr(imgDisc, &disc);
@@ -256,6 +258,8 @@ bool Music::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
 
       lv_obj_set_hidden(btnNext, true);
       lv_obj_set_hidden(btnPrev, true);
+      page1Indicator.Delete();
+      page2Indicator.Create();
       return true;
     }
     case TouchEvents::SwipeDown: {
@@ -264,6 +268,8 @@ bool Music::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
         lv_obj_set_hidden(btnPrev, false);
         lv_obj_set_hidden(btnVolDown, true);
         lv_obj_set_hidden(btnVolUp, true);
+        page2Indicator.Delete();
+        page1Indicator.Create();
         return true;
       }
       return false;
