@@ -59,7 +59,7 @@ Music::Music(Pinetime::Controllers::MusicService& music) : musicService(music) {
   btnVolDown->user_data = this;
   lv_obj_set_event_cb(btnVolDown, event_handler);
   lv_obj_set_size(btnVolDown, 76, 76);
-  lv_obj_align(btnVolDown, nullptr, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+  lv_obj_align(btnVolDown, nullptr, LV_ALIGN_IN_BOTTOM_LEFT, 3, 0);
   lv_obj_add_style(btnVolDown, LV_STATE_DEFAULT, &btn_style);
   label = lv_label_create(btnVolDown, nullptr);
   lv_label_set_text_static(label, Symbols::volumDown);
@@ -69,7 +69,7 @@ Music::Music(Pinetime::Controllers::MusicService& music) : musicService(music) {
   btnVolUp->user_data = this;
   lv_obj_set_event_cb(btnVolUp, event_handler);
   lv_obj_set_size(btnVolUp, 76, 76);
-  lv_obj_align(btnVolUp, nullptr, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+  lv_obj_align(btnVolUp, nullptr, LV_ALIGN_IN_BOTTOM_RIGHT, -3, 0);
   lv_obj_add_style(btnVolUp, LV_STATE_DEFAULT, &btn_style);
   label = lv_label_create(btnVolUp, nullptr);
   lv_label_set_text_static(label, Symbols::volumUp);
@@ -79,7 +79,7 @@ Music::Music(Pinetime::Controllers::MusicService& music) : musicService(music) {
   btnPrev->user_data = this;
   lv_obj_set_event_cb(btnPrev, event_handler);
   lv_obj_set_size(btnPrev, 76, 76);
-  lv_obj_align(btnPrev, nullptr, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+  lv_obj_align(btnPrev, nullptr, LV_ALIGN_IN_BOTTOM_LEFT, 3, 0);
   lv_obj_add_style(btnPrev, LV_STATE_DEFAULT, &btn_style);
   label = lv_label_create(btnPrev, nullptr);
   lv_label_set_text_static(label, Symbols::stepBackward);
@@ -88,7 +88,7 @@ Music::Music(Pinetime::Controllers::MusicService& music) : musicService(music) {
   btnNext->user_data = this;
   lv_obj_set_event_cb(btnNext, event_handler);
   lv_obj_set_size(btnNext, 76, 76);
-  lv_obj_align(btnNext, nullptr, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+  lv_obj_align(btnNext, nullptr, LV_ALIGN_IN_BOTTOM_RIGHT, -3, 0);
   lv_obj_add_style(btnNext, LV_STATE_DEFAULT, &btn_style);
   label = lv_label_create(btnNext, nullptr);
   lv_label_set_text_static(label, Symbols::stepForward);
