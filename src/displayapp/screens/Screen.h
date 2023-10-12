@@ -40,6 +40,9 @@ namespace Pinetime {
           return false;
         }
 
+        virtual void OnLCDWakeup() {
+        }
+
       protected:
         bool running = true;
       };

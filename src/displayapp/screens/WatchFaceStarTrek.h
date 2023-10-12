@@ -40,6 +40,7 @@ namespace Pinetime {
         void UpdateSelected(lv_obj_t* object, lv_event_t event);
 
         void Refresh() override;
+        void OnLCDWakeup() override;
 
       private:
         uint8_t displayedHour = -1;
@@ -95,6 +96,8 @@ namespace Pinetime {
         lv_obj_t* btnClose;
         lv_obj_t* btnSetUseSystemFont;
         lv_obj_t* lblSetUseSystemFont;
+        lv_obj_t* btnSetAnimate;
+        lv_obj_t* lblSetAnimate;
 
         BatteryIcon batteryIcon;
 
@@ -111,10 +114,19 @@ namespace Pinetime {
         lv_obj_t* rect(uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);
         lv_obj_t* circ(uint8_t d, uint8_t x, uint8_t y, lv_color_t color);
         lv_obj_t* _base(uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);
+        void drawWatchFace();
         void updateFontTime();
 
         lv_font_t* font_time = nullptr;
         bool starTrekFontAvailable = false;
+
+        enum class AnimateType {Start};
+        AnimateType animateType = AnimateType::Start;
+        uint32_t animatorTick = 0;
+        uint8_t animateStage = 0;
+        void setVisible(bool visible);
+        void animateStartStep();
+        void startAnimation();
       };
     }
   }

@@ -77,6 +77,10 @@ bool Clock::OnButtonPushed() {
   return screen->OnButtonPushed();
 }
 
+void Clock::OnLCDWakeup() {
+  screen->OnLCDWakeup();
+}
+
 std::unique_ptr<Screen> Clock::WatchFaceDigitalScreen() {
   return std::make_unique<Screens::WatchFaceDigital>(dateTimeController,
                                                      batteryController,

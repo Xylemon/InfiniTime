@@ -234,6 +234,7 @@ void DisplayApp::Refresh() {
         lv_disp_trig_activity(nullptr);
         ApplyBrightness();
         state = States::Running;
+        currentScreen->OnLCDWakeup();
         break;
       case Messages::UpdateBleConnection:
         //        clockScreen.SetBleConnectionState(bleController.IsConnected() ? Screens::Clock::BleConnectionStates::Connected :

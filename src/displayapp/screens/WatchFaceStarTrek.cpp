@@ -36,6 +36,11 @@ constexpr lv_color_t COLOR_BG = COLOR_BLACK;
 constexpr char WANT_SYSTEM_FONT[12] = "System font";
 constexpr char WANT_ST_FONT[15] = "Star Trek font";
 constexpr char WANT_ST_FONT_BUT_NO[14] = "Not installed";
+constexpr char WANT_ANIMATE[8] = "Animate";
+constexpr char WANT_STATIC[7] = "Static";
+
+constexpr uint16_t SETTINGS_AUTO_CLOSE_TICKS = 5000;
+constexpr uint16_t ANIMATOR_START_TICKS = 50;
 
 namespace {
   void event_handler(lv_obj_t* obj, lv_event_t event) {
@@ -67,7 +72,7 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
     filesystem.FileClose(&f);
     starTrekFontAvailable = true;
   }
-  if (settingsController.getStarTrekUseSystemFont()) {
+  if (settingsController.GetStarTrekUseSystemFont()) {
     font_time = &jetbrains_mono_extrabold_compressed;
   } else {
     if (starTrekFontAvailable) {
@@ -77,6 +82,17 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
     }
   }
 
+  drawWatchFace();
+
+  if (settingsController.GetStarTrekAnimate()) {
+    startAnimation();
+  }
+
+  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+  Refresh();
+}
+
+void WatchFaceStarTrek::drawWatchFace() {
   // definitions of gaps and sizes
   // with the future vision to make this all canvas size independent :)
   // -- list for date and stuff
@@ -302,20 +318,29 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
   lv_obj_align(btnSetUseSystemFont, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 15);
   lv_obj_set_style_local_bg_opa(btnSetUseSystemFont, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_70);
   const char* label_sysfont =
-    settingsController.getStarTrekUseSystemFont() ? WANT_SYSTEM_FONT : (starTrekFontAvailable ? WANT_ST_FONT : WANT_ST_FONT_BUT_NO);
+    settingsController.GetStarTrekUseSystemFont() ? WANT_SYSTEM_FONT : (starTrekFontAvailable ? WANT_ST_FONT : WANT_ST_FONT_BUT_NO);
   lblSetUseSystemFont = lv_label_create(btnSetUseSystemFont, nullptr);
   lv_label_set_text_static(lblSetUseSystemFont, label_sysfont);
   lv_obj_set_event_cb(btnSetUseSystemFont, event_handler);
   lv_obj_set_hidden(btnSetUseSystemFont, true);
 
-  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
-  Refresh();
+  btnSetAnimate = lv_btn_create(lv_scr_act(), nullptr);
+  btnSetAnimate->user_data = this;
+  lv_obj_set_size(btnSetAnimate, 200, 60);
+  lv_obj_align(btnSetAnimate, lv_scr_act(), LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_style_local_bg_opa(btnSetAnimate, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_70);
+  const char* label_animate = settingsController.GetStarTrekAnimate() ? WANT_ANIMATE : WANT_STATIC;
+  lblSetAnimate = lv_label_create(btnSetAnimate, nullptr);
+  lv_label_set_text_static(lblSetAnimate, label_animate);
+  lv_obj_set_event_cb(btnSetAnimate, event_handler);
+  lv_obj_set_hidden(btnSetAnimate, true);
 }
 
 WatchFaceStarTrek::~WatchFaceStarTrek() {
   lv_task_del(taskRefresh);
 
-  if (!settingsController.getStarTrekUseSystemFont() && font_time != nullptr) {
+  if (starTrekFontAvailable && !settingsController.GetStarTrekUseSystemFont() && font_time != nullptr) {
+    printf("use system: %b\n", font_time == &jetbrains_mono_extrabold_compressed);
     lv_font_free(font_time);
   }
 
@@ -424,11 +449,133 @@ void WatchFaceStarTrek::Refresh() {
   }
 
   if (!lv_obj_get_hidden(btnClose)) {
-    if ((settingsAutoCloseTick > 0) && (lv_tick_get() - settingsAutoCloseTick > 5000)) {
+    if ((settingsAutoCloseTick > 0) && (lv_tick_get() - settingsAutoCloseTick > SETTINGS_AUTO_CLOSE_TICKS)) {
       lv_obj_set_hidden(btnClose, true);
       lv_obj_set_hidden(btnSetUseSystemFont, true);
       settingsAutoCloseTick = 0;
     }
+  }
+
+  if (settingsController.GetStarTrekAnimate()) {
+    if (animateType == AnimateType::Start && lv_tick_get() - animatorTick > ANIMATOR_START_TICKS) {
+      animateStartStep();
+    }
+    // else if (animateType == AnimateType::TODO) {
+    // }
+  }
+}
+
+void WatchFaceStarTrek::animateStartStep() {
+  switch (animateStage) {
+    case 0:
+      lv_obj_set_hidden(topRightRect, false);
+      lv_obj_set_hidden(upperShapeRect1, false);
+      lv_obj_set_hidden(upperShapeRect2, false);
+      lv_obj_set_hidden(upperShapeRect3, false);
+      lv_obj_set_hidden(upperShapeRect4, false);
+      lv_obj_set_hidden(upperShapeCirc1, false);
+      lv_obj_set_hidden(upperShapeCirc2, false);
+      break;
+    case 1:
+      lv_obj_set_hidden(dateRect1, false);
+      lv_obj_set_hidden(iconRect1, false);
+      lv_obj_set_hidden(iconCirc1, false);
+      lv_obj_set_hidden(label_dayname, false);
+      batteryIcon.SetVisible(true);
+      break;
+    case 2:
+      lv_obj_set_hidden(dateRect2, false);
+      lv_obj_set_hidden(iconRect2, false);
+      lv_obj_set_hidden(iconCirc2, false);
+      lv_obj_set_hidden(label_day, false);
+      lv_obj_set_hidden(notificationIcon, false);
+      break;
+    case 3:
+      lv_obj_set_hidden(dateRect3, false);
+      lv_obj_set_hidden(iconRect3, false);
+      lv_obj_set_hidden(iconCirc3, false);
+      lv_obj_set_hidden(label_month, false);
+      lv_obj_set_hidden(bleIcon, false);
+      break;
+    case 4:
+      lv_obj_set_hidden(dateRect4, false);
+      lv_obj_set_hidden(iconRect4, false);
+      lv_obj_set_hidden(iconCirc4, false);
+      lv_obj_set_hidden(label_year, false);
+      lv_obj_set_hidden(batteryPlug, false);
+      break;
+    case 5:
+      lv_obj_set_hidden(lowerShapeCirc1, false);
+      lv_obj_set_hidden(lowerShapeCircHalfCut, false);
+      lv_obj_set_hidden(bottomRightRect, false);
+      lv_obj_set_hidden(lowerShapeRect1, false);
+      lv_obj_set_hidden(lowerShapeRect2, false);
+      lv_obj_set_hidden(lowerShapeRect3, false);
+      lv_obj_set_hidden(lowerShapeRect4, false);
+      lv_obj_set_hidden(lowerShapeCirc2, false);
+      break;
+    case 6:
+      lv_obj_set_hidden(bar1, false);
+      lv_obj_set_hidden(bar2, false);
+      for (uint8_t i = 0; i < 13; i++) {
+        lv_obj_set_hidden(bracket1[i], false);
+        lv_obj_set_hidden(bracket2[i], false);
+      }
+      lv_obj_set_hidden(heartbeatIcon, false);
+      lv_obj_set_hidden(heartbeatValue, false);
+      lv_obj_set_hidden(stepIcon, false);
+      lv_obj_set_hidden(stepValue, false);
+      break;
+  }
+  animateStage++;
+  animatorTick = lv_tick_get();
+}
+
+void WatchFaceStarTrek::setVisible(bool visible) {
+  lv_obj_set_hidden(topRightRect, !visible);
+  lv_obj_set_hidden(upperShapeRect1, !visible);
+  lv_obj_set_hidden(upperShapeRect2, !visible);
+  lv_obj_set_hidden(upperShapeRect3, !visible);
+  lv_obj_set_hidden(upperShapeRect4, !visible);
+  lv_obj_set_hidden(upperShapeCirc1, !visible);
+  lv_obj_set_hidden(upperShapeCirc2, !visible);
+  lv_obj_set_hidden(dateRect1, !visible);
+  lv_obj_set_hidden(iconRect1, !visible);
+  lv_obj_set_hidden(iconCirc1, !visible);
+  lv_obj_set_hidden(label_dayname, !visible);
+  lv_obj_set_hidden(dateRect2, !visible);
+  lv_obj_set_hidden(iconRect2, !visible);
+  lv_obj_set_hidden(iconCirc2, !visible);
+  lv_obj_set_hidden(label_day, !visible);
+  lv_obj_set_hidden(notificationIcon, !visible);
+  lv_obj_set_hidden(dateRect3, !visible);
+  lv_obj_set_hidden(iconRect3, !visible);
+  lv_obj_set_hidden(iconCirc3, !visible);
+  lv_obj_set_hidden(label_month, !visible);
+  lv_obj_set_hidden(bleIcon, !visible);
+  lv_obj_set_hidden(dateRect4, !visible);
+  lv_obj_set_hidden(iconRect4, !visible);
+  lv_obj_set_hidden(iconCirc4, !visible);
+  lv_obj_set_hidden(label_year, !visible);
+  lv_obj_set_hidden(batteryPlug, !visible);
+  lv_obj_set_hidden(lowerShapeCirc1, !visible);
+  lv_obj_set_hidden(lowerShapeCircHalfCut, !visible);
+  lv_obj_set_hidden(bottomRightRect, !visible);
+  lv_obj_set_hidden(lowerShapeRect1, !visible);
+  lv_obj_set_hidden(lowerShapeRect2, !visible);
+  lv_obj_set_hidden(lowerShapeRect3, !visible);
+  lv_obj_set_hidden(lowerShapeRect4, !visible);
+  lv_obj_set_hidden(lowerShapeCirc2, !visible);
+  lv_obj_set_hidden(bar1, !visible);
+  lv_obj_set_hidden(bar2, !visible);
+  lv_obj_set_hidden(heartbeatIcon, !visible);
+  lv_obj_set_hidden(heartbeatValue, !visible);
+  lv_obj_set_hidden(stepIcon, !visible);
+  lv_obj_set_hidden(stepValue, !visible);
+  batteryIcon.SetVisible(visible);
+  for (uint8_t i = 0; i < 13; i++) {
+    lv_obj_set_hidden(bracket1[i], !visible);
+    lv_obj_set_hidden(bracket2[i], !visible);
   }
 }
 
@@ -467,6 +614,7 @@ bool WatchFaceStarTrek::OnTouchEvent(Pinetime::Applications::TouchEvents event) 
   if ((event == Pinetime::Applications::TouchEvents::LongTap) && lv_obj_get_hidden(btnClose)) {
     lv_obj_set_hidden(btnClose, false);
     lv_obj_set_hidden(btnSetUseSystemFont, false);
+    lv_obj_set_hidden(btnSetAnimate, false);
     settingsAutoCloseTick = lv_tick_get();
     return true;
   }
@@ -480,6 +628,7 @@ bool WatchFaceStarTrek::OnButtonPushed() {
   if (!lv_obj_get_hidden(btnClose)) {
     lv_obj_set_hidden(btnClose, true);
     lv_obj_set_hidden(btnSetUseSystemFont, true);
+    lv_obj_set_hidden(btnSetAnimate, true);
     return true;
   }
   return false;
@@ -493,10 +642,11 @@ void WatchFaceStarTrek::UpdateSelected(lv_obj_t* object, lv_event_t event) {
     if (object == btnClose) {
       lv_obj_set_hidden(btnClose, true);
       lv_obj_set_hidden(btnSetUseSystemFont, true);
+      lv_obj_set_hidden(btnSetAnimate, true);
     }
 
     if (object == btnSetUseSystemFont) {
-      bool usedSystem = settingsController.getStarTrekUseSystemFont();
+      bool usedSystem = settingsController.GetStarTrekUseSystemFont();
       // ST font was not used and shall be used now
       if (starTrekFontAvailable && usedSystem) {
         lv_label_set_text_static(lblSetUseSystemFont, WANT_ST_FONT);
@@ -521,7 +671,31 @@ void WatchFaceStarTrek::UpdateSelected(lv_obj_t* object, lv_event_t event) {
       else {
         lv_label_set_text_static(lblSetUseSystemFont, WANT_ST_FONT_BUT_NO);
       }
-      settingsController.setStarTrekUseSystemFont(usedSystem);
+      settingsController.SetStarTrekUseSystemFont(usedSystem);
+    }
+
+    if (object == btnSetAnimate) {
+      if (settingsController.GetStarTrekAnimate()) {
+        settingsController.SetStarTrekAnimate(false);
+        setVisible(true);
+      } else {
+        settingsController.SetStarTrekAnimate(true);
+        startAnimation();
+      }
+      lv_label_set_text_static(lblSetAnimate, settingsController.GetStarTrekAnimate() ? WANT_ANIMATE : WANT_STATIC);
     }
   }
+}
+
+void WatchFaceStarTrek::OnLCDWakeup() {
+  if (settingsController.GetStarTrekAnimate()) {
+    startAnimation();
+  }
+}
+
+void WatchFaceStarTrek::startAnimation() {
+  animateType = AnimateType::Start;
+  setVisible(false);
+  animatorTick = lv_tick_get();
+  animateStage = 0;
 }

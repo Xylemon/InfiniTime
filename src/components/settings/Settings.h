@@ -51,6 +51,7 @@ namespace Pinetime {
 
       struct WatchFaceStarTrek {
         bool useSystemFont = false;
+        bool animate = true;
       };
 
       Settings(Pinetime::Controllers::FS& fs);
@@ -157,13 +158,24 @@ namespace Pinetime {
         return settings.PTS.weatherEnable;
       };
 
-      bool getStarTrekUseSystemFont() const {
+      bool GetStarTrekUseSystemFont() const {
         return settings.watchFaceStarTrek.useSystemFont;
       };
 
-      void setStarTrekUseSystemFont(bool useSystemFont) {
+      void SetStarTrekUseSystemFont(bool useSystemFont) {
         if (useSystemFont != settings.watchFaceStarTrek.useSystemFont) {
           settings.watchFaceStarTrek.useSystemFont = useSystemFont;
+          settingsChanged = true;
+        }
+      };
+
+      bool GetStarTrekAnimate() const {
+        return settings.watchFaceStarTrek.animate;
+      };
+
+      void SetStarTrekAnimate(bool animate) {
+        if (animate != settings.watchFaceStarTrek.animate) {
+          settings.watchFaceStarTrek.animate = animate;
           settingsChanged = true;
         }
       };
