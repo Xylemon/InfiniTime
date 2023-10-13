@@ -43,6 +43,9 @@ namespace Pinetime {
         virtual void OnLCDWakeup() {
         }
 
+        virtual void OnLCDSleep() {
+        }
+
       protected:
         bool running = true;
       };

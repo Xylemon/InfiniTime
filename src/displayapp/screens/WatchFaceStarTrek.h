@@ -47,6 +47,7 @@ namespace Pinetime {
 
         void Refresh() override;
         void OnLCDWakeup() override;
+        void OnLCDSleep() override;
 
       private:
         Controllers::DateTime& dateTimeController;
@@ -119,18 +120,23 @@ namespace Pinetime {
         uint32_t settingsAutoCloseTick = 0;
         void setMenuButtonsVisible(bool visible);
 
-        void drawWatchFace();
-        lv_obj_t* rect(uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);
-        lv_obj_t* circ(uint8_t d, uint8_t x, uint8_t y, lv_color_t color);
-        lv_obj_t* _base(uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);
-        lv_obj_t* label(lv_color_t color,
+        // ### visibility functions affect everything BUT the time digits
+        // ### a watch should always tell the time ;)
+
+        void drawWatchFace(bool visible = true);
+        lv_obj_t* rect(bool visible, uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);
+        lv_obj_t* circ(bool visible, uint8_t d, uint8_t x, uint8_t y, lv_color_t color);
+        lv_obj_t* _base(bool visible, uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);
+        lv_obj_t* label(bool visible,
+                        lv_color_t color,
                         lv_obj_t* alignto = lv_scr_act(),
                         lv_align_t alignmode = LV_ALIGN_CENTER,
                         int16_t gapx = 0,
                         int16_t gapy = 0,
                         const char* text = "",
                         lv_obj_t* base = lv_scr_act());
-        lv_obj_t* button(uint16_t sizex,
+        lv_obj_t* button(bool visible,
+                         uint16_t sizex,
                          uint16_t sizey,
                          lv_obj_t* alignto = lv_scr_act(),
                          lv_align_t alignmode = LV_ALIGN_CENTER,

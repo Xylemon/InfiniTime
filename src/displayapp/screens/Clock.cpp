@@ -81,6 +81,10 @@ void Clock::OnLCDWakeup() {
   screen->OnLCDWakeup();
 }
 
+void Clock::OnLCDSleep() {
+  screen->OnLCDSleep();
+}
+
 std::unique_ptr<Screen> Clock::WatchFaceDigitalScreen() {
   return std::make_unique<Screens::WatchFaceDigital>(dateTimeController,
                                                      batteryController,

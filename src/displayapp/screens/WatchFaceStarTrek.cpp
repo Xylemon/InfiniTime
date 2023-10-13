@@ -87,10 +87,11 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
     }
   }
 
-  drawWatchFace();
-
   if (settingsController.GetStarTrekAnimate()) {
+    drawWatchFace(false);
     startAnimation();
+  } else {
+    drawWatchFace();
   }
 
   taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
@@ -109,7 +110,7 @@ WatchFaceStarTrek::~WatchFaceStarTrek() {
 
 // ########## Watch face drawing ###############################################
 
-void WatchFaceStarTrek::drawWatchFace() {
+void WatchFaceStarTrek::drawWatchFace(bool visible) {
   // definitions of gaps and sizes
   // with the future vision to make this all canvas size independent :)
   // -- list for date and stuff
@@ -139,39 +140,39 @@ void WatchFaceStarTrek::drawWatchFace() {
   // -- end of list part (back to magic numbers below this)
   constexpr uint8_t listend = upperend + 4 * cellheight + 5 * gap;
 
-  topRightRect = rect(84, 11, 156, 0, COLOR_DARKGRAY);
-  upperShape[0] = rect(85, 11, 68, 0, COLOR_BLUE);
-  upperShape[1] = rect(72, 46, 34, 34, COLOR_BLUE);
-  upperShape[2] = rect(36, 80, 70, 0, COLOR_BLUE);
-  upperShape[3] = rect(14, 14, 106, 11, COLOR_BLUE);
-  upperShape[4] = circ(68, 34, 0, COLOR_BLUE);
-  upperShape[5] = circ(28, 106, 11, COLOR_BG);
-  lowerShape[0] = circ(68, 34, 172, COLOR_BLUE);   // draw these two first, because circle is to big
-  lowerShape[1] = rect(68, 34, 34, 172, COLOR_BG); // and has to be occluded by this
-  lowerShape[2] = rect(85, 11, 68, 229, COLOR_BLUE);
-  lowerShape[3] = rect(72, 240 - listend - 34, 34, listend, COLOR_BLUE);
-  lowerShape[4] = rect(36, 240 - listend, 70, listend, COLOR_BLUE);
-  lowerShape[5] = rect(14, 14, 106, 215, COLOR_BLUE);
-  lowerShape[6] = circ(28, 106, 201, COLOR_BG);
-  bottomRightRect = rect(84, 11, 156, 229, COLOR_ORANGE);
+  topRightRect = rect(visible, 84, 11, 156, 0, COLOR_DARKGRAY);
+  upperShape[0] = rect(visible, 85, 11, 68, 0, COLOR_BLUE);
+  upperShape[1] = rect(visible, 72, 46, 34, 34, COLOR_BLUE);
+  upperShape[2] = rect(visible, 36, 80, 70, 0, COLOR_BLUE);
+  upperShape[3] = rect(visible, 14, 14, 106, 11, COLOR_BLUE);
+  upperShape[4] = circ(visible, 68, 34, 0, COLOR_BLUE);
+  upperShape[5] = circ(visible, 28, 106, 11, COLOR_BG);
+  lowerShape[0] = circ(visible, 68, 34, 172, COLOR_BLUE);   // draw these two first, because circle is to big
+  lowerShape[1] = rect(visible, 68, 34, 34, 172, COLOR_BG); // and has to be occluded by this
+  lowerShape[2] = rect(visible, 85, 11, 68, 229, COLOR_BLUE);
+  lowerShape[3] = rect(visible, 72, 240 - listend - 34, 34, listend, COLOR_BLUE);
+  lowerShape[4] = rect(visible, 36, 240 - listend, 70, listend, COLOR_BLUE);
+  lowerShape[5] = rect(visible, 14, 14, 106, 215, COLOR_BLUE);
+  lowerShape[6] = circ(visible, 28, 106, 201, COLOR_BG);
+  bottomRightRect = rect(visible, 84, 11, 156, 229, COLOR_ORANGE);
 
-  iconSpace[0] = rect(iconrectwidth, cellheight, iconrect_x, iconspace_y, COLOR_BEIGE);
-  iconSpace[1] = circ(cellheight, icon_x, iconspace_y, COLOR_BEIGE);
-  listItem1[0] = rect(cellwidth, cellheight, cells_x, upg, COLOR_BEIGE);
-  listItem2[0] = rect(cellwidth, cellheight, cells_x, listdistance2, COLOR_ORANGE);
-  listItem3[0] = rect(cellwidth, cellheight, cells_x, listdistance3, COLOR_LIGHTBLUE);
-  listItem4[0] = rect(cellwidth, cellheight, cells_x, listdistance4, COLOR_DARKGRAY);
-  listItem1[1] = rect(iconrectwidth, cellheight, iconrect_x, upg, COLOR_LIGHTBLUE);
-  listItem2[1] = rect(iconrectwidth, cellheight, iconrect_x, listdistance2, COLOR_BEIGE);
-  listItem3[1] = rect(iconrectwidth, cellheight, iconrect_x, listdistance3, COLOR_BROWN);
-  listItem4[1] = rect(iconrectwidth, cellheight, iconrect_x, listdistance4, COLOR_DARKBLUE);
-  listItem1[2] = circ(cellheight, icon_x, upg, COLOR_LIGHTBLUE);
-  listItem2[2] = circ(cellheight, icon_x, listdistance2, COLOR_BEIGE);
-  listItem3[2] = circ(cellheight, icon_x, listdistance3, COLOR_BROWN);
-  listItem4[2] = circ(cellheight, icon_x, listdistance4, COLOR_DARKBLUE);
+  iconSpace[0] = rect(visible, iconrectwidth, cellheight, iconrect_x, iconspace_y, COLOR_BEIGE);
+  iconSpace[1] = circ(visible, cellheight, icon_x, iconspace_y, COLOR_BEIGE);
+  listItem1[0] = rect(visible, cellwidth, cellheight, cells_x, upg, COLOR_BEIGE);
+  listItem2[0] = rect(visible, cellwidth, cellheight, cells_x, listdistance2, COLOR_ORANGE);
+  listItem3[0] = rect(visible, cellwidth, cellheight, cells_x, listdistance3, COLOR_LIGHTBLUE);
+  listItem4[0] = rect(visible, cellwidth, cellheight, cells_x, listdistance4, COLOR_DARKGRAY);
+  listItem1[1] = rect(visible, iconrectwidth, cellheight, iconrect_x, upg, COLOR_LIGHTBLUE);
+  listItem2[1] = rect(visible, iconrectwidth, cellheight, iconrect_x, listdistance2, COLOR_BEIGE);
+  listItem3[1] = rect(visible, iconrectwidth, cellheight, iconrect_x, listdistance3, COLOR_BROWN);
+  listItem4[1] = rect(visible, iconrectwidth, cellheight, iconrect_x, listdistance4, COLOR_DARKBLUE);
+  listItem1[2] = circ(visible, cellheight, icon_x, upg, COLOR_LIGHTBLUE);
+  listItem2[2] = circ(visible, cellheight, icon_x, listdistance2, COLOR_BEIGE);
+  listItem3[2] = circ(visible, cellheight, icon_x, listdistance3, COLOR_BROWN);
+  listItem4[2] = circ(visible, cellheight, icon_x, listdistance4, COLOR_DARKBLUE);
 
-  bar1 = rect(barwidth, cellheight, bar1_x, bar_y, COLOR_ORANGE);
-  bar2 = rect(barwidth, cellheight, bar2_x, bar_y, COLOR_DARKGRAY);
+  bar1 = rect(visible, barwidth, cellheight, bar1_x, bar_y, COLOR_ORANGE);
+  bar2 = rect(visible, barwidth, cellheight, bar2_x, bar_y, COLOR_DARKGRAY);
 
   // small brackets
   // -- global location
@@ -204,101 +205,104 @@ void WatchFaceStarTrek::drawWatchFace() {
   constexpr uint8_t bottom2_y = bottom1_y + bracketrect2_h;
   constexpr uint8_t rightvertical_x = rightbracket_x - 2 * vertical_w - bgap;
 
-  bracket1[0] = rect(vertical_w, largerect_h, leftbracket_x, largerect_y, COLOR_DARKBLUE);
-  bracket1[1] = rect(bracketrect1_w, bracketrect1_h, vertical2_x, bracket_y, COLOR_LIGHTBLUE);
-  bracket1[2] = circ(bcirc_d, vertical_x, bracket_y, COLOR_LIGHTBLUE);
-  bracket1[3] = rect(vertical_w, bracketrect2_h, vertical_x, bracket_y + bracketrect1_h, COLOR_LIGHTBLUE);
-  bracket1[4] = circ(scirc_d, vertical2_x, bracket_y + bracketrect1_h, COLOR_BLACK);
-  bracket1[5] = rect(stickout_w, stickout_h, vertical_x - stickout_w, stickout_y, COLOR_LIGHTBLUE);
-  bracket1[6] = rect(vertical_w, smallrect_h, vertical_x, smallrect1_y, COLOR_DARKGRAY);
-  bracket1[7] = rect(vertical_w, smallrect_h, vertical_x, smallrect2_y, COLOR_ORANGE);
-  bracket1[8] = rect(vertical_w, bracketrect2_h, vertical_x, bottom1_y, COLOR_LIGHTBLUE);
-  bracket1[9] = rect(stickout_w, stickout_h, vertical_x - stickout_w, stickout2_y, COLOR_LIGHTBLUE);
-  bracket1[10] = circ(bcirc_d, vertical_x, bottom2_y - bcircshift, COLOR_LIGHTBLUE);
-  bracket1[11] = rect(bracketrect1_w, bracketrect1_h, vertical2_x, bottom2_y, COLOR_LIGHTBLUE);
-  bracket1[12] = circ(scirc_d, vertical2_x, bottom2_y - scircshift, COLOR_BLACK);
+  bracket1[0] = rect(visible, vertical_w, largerect_h, leftbracket_x, largerect_y, COLOR_DARKBLUE);
+  bracket1[1] = rect(visible, bracketrect1_w, bracketrect1_h, vertical2_x, bracket_y, COLOR_LIGHTBLUE);
+  bracket1[2] = circ(visible, bcirc_d, vertical_x, bracket_y, COLOR_LIGHTBLUE);
+  bracket1[3] = rect(visible, vertical_w, bracketrect2_h, vertical_x, bracket_y + bracketrect1_h, COLOR_LIGHTBLUE);
+  bracket1[4] = circ(visible, scirc_d, vertical2_x, bracket_y + bracketrect1_h, COLOR_BLACK);
+  bracket1[5] = rect(visible, stickout_w, stickout_h, vertical_x - stickout_w, stickout_y, COLOR_LIGHTBLUE);
+  bracket1[6] = rect(visible, vertical_w, smallrect_h, vertical_x, smallrect1_y, COLOR_DARKGRAY);
+  bracket1[7] = rect(visible, vertical_w, smallrect_h, vertical_x, smallrect2_y, COLOR_ORANGE);
+  bracket1[8] = rect(visible, vertical_w, bracketrect2_h, vertical_x, bottom1_y, COLOR_LIGHTBLUE);
+  bracket1[9] = rect(visible, stickout_w, stickout_h, vertical_x - stickout_w, stickout2_y, COLOR_LIGHTBLUE);
+  bracket1[10] = circ(visible, bcirc_d, vertical_x, bottom2_y - bcircshift, COLOR_LIGHTBLUE);
+  bracket1[11] = rect(visible, bracketrect1_w, bracketrect1_h, vertical2_x, bottom2_y, COLOR_LIGHTBLUE);
+  bracket1[12] = circ(visible, scirc_d, vertical2_x, bottom2_y - scircshift, COLOR_BLACK);
 
-  bracket2[0] = rect(vertical_w, largerect_h, rightbracket_x - vertical_w, largerect_y, COLOR_DARKBLUE);
-  bracket2[1] = rect(bracketrect1_w, bracketrect1_h, rightvertical_x - bracketrect1_w, bracket_y, COLOR_LIGHTBLUE);
-  bracket2[2] = circ(bcirc_d, rightvertical_x - bcircshift + 1, bracket_y, COLOR_LIGHTBLUE);
-  bracket2[3] = rect(vertical_w, bracketrect2_h, rightvertical_x, bracket_y + bracketrect1_h, COLOR_LIGHTBLUE);
-  bracket2[4] = circ(scirc_d, rightvertical_x - scirc_d, bracket_y + bracketrect1_h, COLOR_BLACK);
-  bracket2[5] = rect(stickout_w, stickout_h, rightvertical_x + vertical_w, stickout_y, COLOR_LIGHTBLUE);
-  bracket2[6] = rect(vertical_w, smallrect_h, rightvertical_x, smallrect1_y, COLOR_ORANGE);
-  bracket2[7] = rect(vertical_w, smallrect_h, rightvertical_x, smallrect2_y, COLOR_DARKGRAY);
-  bracket2[8] = rect(vertical_w, bracketrect2_h, rightvertical_x, bottom1_y, COLOR_LIGHTBLUE);
-  bracket2[9] = rect(stickout_w, stickout_h, rightvertical_x + vertical_w, stickout2_y, COLOR_LIGHTBLUE);
-  bracket2[10] = circ(bcirc_d, rightvertical_x - bcircshift + 1, bottom2_y - bcircshift, COLOR_LIGHTBLUE);
-  bracket2[11] = rect(bracketrect1_w, bracketrect1_h, rightvertical_x - bracketrect1_w, bottom2_y, COLOR_LIGHTBLUE);
-  bracket2[12] = circ(scirc_d, rightvertical_x - scirc_d, bottom2_y - scircshift, COLOR_BLACK);
+  bracket2[0] = rect(visible, vertical_w, largerect_h, rightbracket_x - vertical_w, largerect_y, COLOR_DARKBLUE);
+  bracket2[1] = rect(visible, bracketrect1_w, bracketrect1_h, rightvertical_x - bracketrect1_w, bracket_y, COLOR_LIGHTBLUE);
+  bracket2[2] = circ(visible, bcirc_d, rightvertical_x - bcircshift + 1, bracket_y, COLOR_LIGHTBLUE);
+  bracket2[3] = rect(visible, vertical_w, bracketrect2_h, rightvertical_x, bracket_y + bracketrect1_h, COLOR_LIGHTBLUE);
+  bracket2[4] = circ(visible, scirc_d, rightvertical_x - scirc_d, bracket_y + bracketrect1_h, COLOR_BLACK);
+  bracket2[5] = rect(visible, stickout_w, stickout_h, rightvertical_x + vertical_w, stickout_y, COLOR_LIGHTBLUE);
+  bracket2[6] = rect(visible, vertical_w, smallrect_h, rightvertical_x, smallrect1_y, COLOR_ORANGE);
+  bracket2[7] = rect(visible, vertical_w, smallrect_h, rightvertical_x, smallrect2_y, COLOR_DARKGRAY);
+  bracket2[8] = rect(visible, vertical_w, bracketrect2_h, rightvertical_x, bottom1_y, COLOR_LIGHTBLUE);
+  bracket2[9] = rect(visible, stickout_w, stickout_h, rightvertical_x + vertical_w, stickout2_y, COLOR_LIGHTBLUE);
+  bracket2[10] = circ(visible, bcirc_d, rightvertical_x - bcircshift + 1, bottom2_y - bcircshift, COLOR_LIGHTBLUE);
+  bracket2[11] = rect(visible, bracketrect1_w, bracketrect1_h, rightvertical_x - bracketrect1_w, bottom2_y, COLOR_LIGHTBLUE);
+  bracket2[12] = circ(visible, scirc_d, rightvertical_x - scirc_d, bottom2_y - scircshift, COLOR_BLACK);
 
   batteryIcon.Create(lv_scr_act());
+  batteryIcon.SetVisible(visible);
   batteryIcon.SetColor(COLOR_ICONS);
   lv_obj_align(batteryIcon.GetObject(), listItem1[1], LV_ALIGN_CENTER, -gap, 0);
-  notificationIcon = label(COLOR_ICONS, listItem2[1], LV_ALIGN_CENTER, -gap, 0, NotificationIcon::GetIcon(false));
+  notificationIcon = label(visible, COLOR_ICONS, listItem2[1], LV_ALIGN_CENTER, -gap, 0, NotificationIcon::GetIcon(false));
   lv_img_set_angle(notificationIcon, 1500);
-  bleIcon = label(COLOR_ICONS, listItem3[1], LV_ALIGN_CENTER, -gap, 0, Symbols::bluetooth);
-  batteryPlug = label(COLOR_ICONS, listItem4[1], LV_ALIGN_CENTER, -gap, 0, Symbols::plug);
+  bleIcon = label(visible, COLOR_ICONS, listItem3[1], LV_ALIGN_CENTER, -gap, 0, Symbols::bluetooth);
+  batteryPlug = label(visible, COLOR_ICONS, listItem4[1], LV_ALIGN_CENTER, -gap, 0, Symbols::plug);
 
-  label_dayname = label(COLOR_DATE, listItem1[0], LV_ALIGN_IN_LEFT_MID, gap);
-  label_day = label(COLOR_DATE, listItem2[0], LV_ALIGN_IN_LEFT_MID, gap);
-  label_month = label(COLOR_DATE, listItem3[0], LV_ALIGN_IN_LEFT_MID, gap);
-  label_year = label(COLOR_DATE, listItem4[0], LV_ALIGN_IN_LEFT_MID, gap);
+  label_dayname = label(visible, COLOR_DATE, listItem1[0], LV_ALIGN_IN_LEFT_MID, gap);
+  label_day = label(visible, COLOR_DATE, listItem2[0], LV_ALIGN_IN_LEFT_MID, gap);
+  label_month = label(visible, COLOR_DATE, listItem3[0], LV_ALIGN_IN_LEFT_MID, gap);
+  label_year = label(visible, COLOR_DATE, listItem4[0], LV_ALIGN_IN_LEFT_MID, gap);
 
   hourAnchor = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(hourAnchor, "");
   lv_obj_set_pos(hourAnchor, 175, 47);
-  label_time_hour_1 = label(COLOR_TIME, hourAnchor, LV_ALIGN_OUT_RIGHT_MID, 2);
+  label_time_hour_1 = label(true, COLOR_TIME, hourAnchor, LV_ALIGN_OUT_RIGHT_MID, 2);
   lv_obj_set_style_local_text_font(label_time_hour_1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
-  label_time_hour_10 = label(COLOR_TIME, hourAnchor, LV_ALIGN_OUT_LEFT_MID, -2);
+  label_time_hour_10 = label(true, COLOR_TIME, hourAnchor, LV_ALIGN_OUT_LEFT_MID, -2);
   lv_obj_set_style_local_text_font(label_time_hour_10, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
   minuteAnchor = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(minuteAnchor, "");
   lv_obj_set_pos(minuteAnchor, 175, 122);
-  label_time_min_1 = label(COLOR_TIME, minuteAnchor, LV_ALIGN_OUT_RIGHT_MID, 2);
+  label_time_min_1 = label(true, COLOR_TIME, minuteAnchor, LV_ALIGN_OUT_RIGHT_MID, 2);
   lv_obj_set_style_local_text_font(label_time_min_1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
-  label_time_min_10 = label(COLOR_TIME, minuteAnchor, LV_ALIGN_OUT_LEFT_MID, -2);
+  label_time_min_10 = label(true, COLOR_TIME, minuteAnchor, LV_ALIGN_OUT_LEFT_MID, -2);
   lv_obj_set_style_local_text_font(label_time_min_10, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
-  label_time_ampm = label(COLOR_DATE, upperShape[2], LV_ALIGN_IN_BOTTOM_RIGHT, -30, -30);
+  label_time_ampm = label(visible, COLOR_DATE, upperShape[2], LV_ALIGN_IN_BOTTOM_RIGHT, -30, -30);
 
-  heartbeatIcon = label(COLOR_HEARTBEAT_OFF, lowerShape[3], LV_ALIGN_IN_TOP_LEFT, 5, gap, Symbols::heartBeat);
-  heartbeatValue = label(COLOR_ICONS, heartbeatIcon, LV_ALIGN_OUT_RIGHT_MID, 5);
-  stepIcon = label(COLOR_STEPS, bracket1[0], LV_ALIGN_OUT_RIGHT_MID, 13, 0, Symbols::shoe);
-  stepValue = label(COLOR_STEPS, stepIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0, "0");
+  heartbeatIcon = label(visible, COLOR_HEARTBEAT_OFF, lowerShape[3], LV_ALIGN_IN_TOP_LEFT, 5, gap, Symbols::heartBeat);
+  heartbeatValue = label(visible, COLOR_ICONS, heartbeatIcon, LV_ALIGN_OUT_RIGHT_MID, 5);
+  stepIcon = label(visible, COLOR_STEPS, bracket1[0], LV_ALIGN_OUT_RIGHT_MID, 13, 0, Symbols::shoe);
+  stepValue = label(visible, COLOR_STEPS, stepIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0, "0");
 
   // menu buttons
-  btnClose = button(200, 60, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, -15);
-  lblClose = label(COLOR_WHITE, btnClose, LV_ALIGN_CENTER, 0, 0, "X", btnClose);
-  btnSetUseSystemFont = button(200, 60, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 15);
+  btnClose = button(false, 200, 60, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, -15);
+  lblClose = label(true, COLOR_WHITE, btnClose, LV_ALIGN_CENTER, 0, 0, "X", btnClose);
+  btnSetUseSystemFont = button(false, 200, 60, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 15);
   const char* label_sysfont =
     settingsController.GetStarTrekUseSystemFont() ? WANT_SYSTEM_FONT : (starTrekFontAvailable ? WANT_ST_FONT : WANT_ST_FONT_BUT_NO);
-  lblSetUseSystemFont = label(COLOR_WHITE, btnSetUseSystemFont, LV_ALIGN_CENTER, 0, 0, label_sysfont, btnSetUseSystemFont);
-  btnSetAnimate = button(200, 60);
+  lblSetUseSystemFont = label(true, COLOR_WHITE, btnSetUseSystemFont, LV_ALIGN_CENTER, 0, 0, label_sysfont, btnSetUseSystemFont);
+  btnSetAnimate = button(false, 200, 60);
   const char* label_animate = settingsController.GetStarTrekAnimate() ? WANT_ANIMATE : WANT_STATIC;
-  lblSetAnimate = label(COLOR_WHITE, btnSetAnimate, LV_ALIGN_CENTER, 0, 0, label_animate, btnSetAnimate);
+  lblSetAnimate = label(true, COLOR_WHITE, btnSetAnimate, LV_ALIGN_CENTER, 0, 0, label_animate, btnSetAnimate);
 }
 
-lv_obj_t* WatchFaceStarTrek::rect(uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color) {
-  lv_obj_t* rect = _base(w, h, x, y, color);
+lv_obj_t* WatchFaceStarTrek::rect(bool visible, uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color) {
+  lv_obj_t* rect = _base(visible, w, h, x, y, color);
   lv_obj_set_style_local_radius(rect, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, 0);
   return rect;
 }
 
-lv_obj_t* WatchFaceStarTrek::circ(uint8_t d, uint8_t x, uint8_t y, lv_color_t color) {
-  lv_obj_t* circ = _base(d, d, x, y, color);
+lv_obj_t* WatchFaceStarTrek::circ(bool visible, uint8_t d, uint8_t x, uint8_t y, lv_color_t color) {
+  lv_obj_t* circ = _base(visible, d, d, x, y, color);
   lv_obj_set_style_local_radius(circ, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_RADIUS_CIRCLE);
   return circ;
 }
 
-lv_obj_t* WatchFaceStarTrek::_base(uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color) {
+lv_obj_t* WatchFaceStarTrek::_base(bool visible, uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color) {
   lv_obj_t* base = lv_obj_create(lv_scr_act(), nullptr);
+  lv_obj_set_hidden(base, !visible);
   lv_obj_set_style_local_bg_color(base, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color);
   lv_obj_set_size(base, w, h);
   lv_obj_set_pos(base, x, y);
   return base;
 }
 
-lv_obj_t* WatchFaceStarTrek::label(lv_color_t color,
+lv_obj_t* WatchFaceStarTrek::label(bool visible,
+                                   lv_color_t color,
                                    lv_obj_t* alignto,
                                    lv_align_t alignmode,
                                    int16_t gapx,
@@ -306,14 +310,22 @@ lv_obj_t* WatchFaceStarTrek::label(lv_color_t color,
                                    const char* text,
                                    lv_obj_t* base) {
   lv_obj_t* label = lv_label_create(base, nullptr);
+  lv_obj_set_hidden(label, !visible);
   lv_obj_set_style_local_text_color(label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, color);
   lv_label_set_text_static(label, text);
   lv_obj_align(label, alignto, alignmode, gapx, gapy);
   return label;
 }
 
-lv_obj_t* WatchFaceStarTrek::button(uint16_t sizex, uint16_t sizey, lv_obj_t* alignto, lv_align_t alignmode, int16_t gapx, int16_t gapy) {
+lv_obj_t* WatchFaceStarTrek::button(bool visible,
+                                    uint16_t sizex,
+                                    uint16_t sizey,
+                                    lv_obj_t* alignto,
+                                    lv_align_t alignmode,
+                                    int16_t gapx,
+                                    int16_t gapy) {
   lv_obj_t* btn = lv_btn_create(lv_scr_act(), nullptr);
+  lv_obj_set_hidden(btn, !visible);
   btn->user_data = this;
   lv_obj_set_size(btn, sizex, sizey);
   lv_obj_align(btn, alignto, alignmode, gapx, gapy);
@@ -565,6 +577,12 @@ bool WatchFaceStarTrek::OnButtonPushed() {
 void WatchFaceStarTrek::OnLCDWakeup() {
   if (settingsController.GetStarTrekAnimate()) {
     startAnimation();
+  }
+}
+
+void WatchFaceStarTrek::OnLCDSleep() {
+  if (settingsController.GetStarTrekAnimate()) {
+    setVisible(false);
   }
 }
 
