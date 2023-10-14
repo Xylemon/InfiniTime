@@ -40,6 +40,8 @@ constexpr char WANT_ST_FONT[15] = "Star Trek font";
 constexpr char WANT_ST_FONT_BUT_NO[14] = "Not installed";
 constexpr char WANT_ANIMATE[8] = "Animate";
 constexpr char WANT_STATIC[7] = "Static";
+constexpr char WANT_SECONDS[8] = "Seconds";
+constexpr char WANT_MINUTES[8] = "Minutes";
 
 // ########## Timing constants
 constexpr uint16_t SETTINGS_AUTO_CLOSE_TICKS = 5000;
@@ -249,18 +251,18 @@ void WatchFaceStarTrek::drawWatchFace(bool visible) {
 
   hourAnchor = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_text_static(hourAnchor, "");
-  lv_obj_set_pos(hourAnchor, 175, 47);
+  minuteAnchor = lv_label_create(lv_scr_act(), nullptr);
+  lv_label_set_text_static(minuteAnchor, "");
+  setTimeAnchorForDisplaySeconds(settingsController.GetStarTrekDisplaySeconds());
   label_time_hour_1 = label(true, COLOR_TIME, hourAnchor, LV_ALIGN_OUT_RIGHT_MID, 2);
   lv_obj_set_style_local_text_font(label_time_hour_1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
   label_time_hour_10 = label(true, COLOR_TIME, hourAnchor, LV_ALIGN_OUT_LEFT_MID, -2);
   lv_obj_set_style_local_text_font(label_time_hour_10, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
-  minuteAnchor = lv_label_create(lv_scr_act(), nullptr);
-  lv_label_set_text_static(minuteAnchor, "");
-  lv_obj_set_pos(minuteAnchor, 175, 122);
   label_time_min_1 = label(true, COLOR_TIME, minuteAnchor, LV_ALIGN_OUT_RIGHT_MID, 2);
   lv_obj_set_style_local_text_font(label_time_min_1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
   label_time_min_10 = label(true, COLOR_TIME, minuteAnchor, LV_ALIGN_OUT_LEFT_MID, -2);
   lv_obj_set_style_local_text_font(label_time_min_10, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, font_time);
+  label_time_seconds = label(settingsController.GetStarTrekDisplaySeconds(), COLOR_TIME, minuteAnchor, LV_ALIGN_CENTER, 0, 46, "00");
   label_time_ampm = label(visible, COLOR_DATE, upperShape[2], LV_ALIGN_IN_BOTTOM_RIGHT, -30, -30);
 
   heartbeatIcon = label(visible, COLOR_HEARTBEAT_OFF, lowerShape[3], LV_ALIGN_IN_TOP_LEFT, 5, gap, Symbols::heartBeat);
@@ -269,15 +271,40 @@ void WatchFaceStarTrek::drawWatchFace(bool visible) {
   stepValue = label(visible, COLOR_STEPS, stepIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0, "0");
 
   // menu buttons
-  btnClose = button(false, 200, 60, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, -15);
-  lblClose = label(true, COLOR_WHITE, btnClose, LV_ALIGN_CENTER, 0, 0, "X", btnClose);
-  btnSetUseSystemFont = button(false, 200, 60, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 15);
+  btnSetUseSystemFont = button(false, 200, 50, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 8);
   const char* label_sysfont =
     settingsController.GetStarTrekUseSystemFont() ? WANT_SYSTEM_FONT : (starTrekFontAvailable ? WANT_ST_FONT : WANT_ST_FONT_BUT_NO);
   lblSetUseSystemFont = label(true, COLOR_WHITE, btnSetUseSystemFont, LV_ALIGN_CENTER, 0, 0, label_sysfont, btnSetUseSystemFont);
-  btnSetAnimate = button(false, 200, 60);
+  btnSetAnimate = button(false, 200, 50, btnSetUseSystemFont, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
   const char* label_animate = settingsController.GetStarTrekAnimate() ? WANT_ANIMATE : WANT_STATIC;
   lblSetAnimate = label(true, COLOR_WHITE, btnSetAnimate, LV_ALIGN_CENTER, 0, 0, label_animate, btnSetAnimate);
+  btnSetDisplaySeconds = button(false, 200, 50, btnSetAnimate, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
+  const char* label_displaySeconds = settingsController.GetStarTrekDisplaySeconds() ? WANT_SECONDS : WANT_MINUTES;
+  lblSetDisplaySeconds = label(true, COLOR_WHITE, btnSetDisplaySeconds, LV_ALIGN_CENTER, 0, 0, label_displaySeconds, btnSetDisplaySeconds);
+  btnClose = button(false, 200, 50, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, -8);
+  lblClose = label(true, COLOR_WHITE, btnClose, LV_ALIGN_CENTER, 0, 0, "X", btnClose);
+}
+
+void WatchFaceStarTrek::setTimeAnchorForDisplaySeconds(bool displaySeconds) {
+  constexpr uint8_t TA_X = 175;
+  constexpr uint8_t TA_NOSEC_H_Y = 47;
+  constexpr uint8_t TA_NOSEC_M_Y = 122;
+  constexpr int8_t TA_SEC_SHIFT_Y = -6;
+  if (displaySeconds) {
+    lv_obj_set_pos(hourAnchor, TA_X, TA_NOSEC_H_Y + TA_SEC_SHIFT_Y);
+    lv_obj_set_pos(minuteAnchor, TA_X, TA_NOSEC_M_Y + TA_SEC_SHIFT_Y);
+  } else {
+    lv_obj_set_pos(hourAnchor, TA_X, TA_NOSEC_H_Y);
+    lv_obj_set_pos(minuteAnchor, TA_X, TA_NOSEC_M_Y);
+  }
+}
+
+void WatchFaceStarTrek::realignTime() {
+  lv_obj_realign(label_time_hour_1);
+  lv_obj_realign(label_time_hour_10);
+  lv_obj_realign(label_time_min_1);
+  lv_obj_realign(label_time_min_10);
+  lv_obj_realign(label_time_seconds);
 }
 
 lv_obj_t* WatchFaceStarTrek::rect(bool visible, uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color) {
@@ -366,10 +393,17 @@ void WatchFaceStarTrek::Refresh() {
   if (currentDateTime.IsUpdated()) {
     auto hour = dateTimeController.Hours();
     auto minute = dateTimeController.Minutes();
+    auto second = dateTimeController.Seconds();
     auto year = dateTimeController.Year();
     auto month = dateTimeController.Month();
     auto dayOfWeek = dateTimeController.DayOfWeek();
     auto day = dateTimeController.Day();
+
+    if (settingsController.GetStarTrekDisplaySeconds()) {
+      if (displayedSecond != second) {
+        lv_label_set_text_fmt(label_time_seconds, "%02d", second);
+      }
+    }
 
     if (displayedMinute != minute || displayedHour != hour) {
       displayedHour = hour;
@@ -391,10 +425,7 @@ void WatchFaceStarTrek::Refresh() {
       lv_label_set_text_fmt(label_time_hour_10, "%d", hour / 10);
       lv_label_set_text_fmt(label_time_min_1, "%d", minute % 10);
       lv_label_set_text_fmt(label_time_min_10, "%d", minute / 10);
-      lv_obj_realign(label_time_hour_1);
-      lv_obj_realign(label_time_hour_10);
-      lv_obj_realign(label_time_min_1);
-      lv_obj_realign(label_time_min_10);
+      realignTime();
     }
 
     if ((day != currentDay) || (dayOfWeek != currentDayOfWeek) || (month != currentMonth) || (year != currentYear)) {
@@ -542,6 +573,7 @@ void WatchFaceStarTrek::setVisible(bool visible) {
 void WatchFaceStarTrek::setMenuButtonsVisible(bool visible) {
   lv_obj_set_hidden(btnSetUseSystemFont, !visible);
   lv_obj_set_hidden(btnSetAnimate, !visible);
+  lv_obj_set_hidden(btnSetDisplaySeconds, !visible);
   lv_obj_set_hidden(btnClose, !visible);
 }
 
@@ -635,6 +667,20 @@ void WatchFaceStarTrek::UpdateSelected(lv_obj_t* object, lv_event_t event) {
         startAnimation();
       }
       lv_label_set_text_static(lblSetAnimate, settingsController.GetStarTrekAnimate() ? WANT_ANIMATE : WANT_STATIC);
+    }
+
+    if (object == btnSetDisplaySeconds) {
+      if (settingsController.GetStarTrekDisplaySeconds()) {
+        settingsController.SetStarTrekDisplaySeconds(false);
+        setTimeAnchorForDisplaySeconds(false);
+        lv_obj_set_hidden(label_time_seconds, true);
+      } else {
+        settingsController.SetStarTrekDisplaySeconds(true);
+        setTimeAnchorForDisplaySeconds(true);
+        lv_obj_set_hidden(label_time_seconds, false);
+      }
+      realignTime();
+      lv_label_set_text_static(lblSetDisplaySeconds, settingsController.GetStarTrekDisplaySeconds() ? WANT_SECONDS : WANT_MINUTES);
     }
   }
 }

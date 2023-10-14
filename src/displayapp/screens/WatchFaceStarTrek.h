@@ -63,6 +63,7 @@ namespace Pinetime {
 
         uint8_t displayedHour = -1;
         uint8_t displayedMinute = -1;
+        uint8_t displayedSecond = -1;
         uint16_t currentYear = 1970;
         Controllers::DateTime::Months currentMonth = Pinetime::Controllers::DateTime::Months::Unknown;
         Controllers::DateTime::Days currentDayOfWeek = Pinetime::Controllers::DateTime::Days::Unknown;
@@ -82,6 +83,7 @@ namespace Pinetime {
         lv_obj_t* label_time_hour_10;
         lv_obj_t* label_time_min_1;
         lv_obj_t* label_time_min_10;
+        lv_obj_t* label_time_seconds;
         lv_obj_t* label_time_ampm;
         lv_obj_t* label_dayname;
         lv_obj_t* label_day;
@@ -111,12 +113,14 @@ namespace Pinetime {
         lv_obj_t *minuteAnchor, *hourAnchor;
 
         // config menu
-        lv_obj_t* btnClose;
-        lv_obj_t* lblClose;
         lv_obj_t* btnSetUseSystemFont;
         lv_obj_t* lblSetUseSystemFont;
         lv_obj_t* btnSetAnimate;
         lv_obj_t* lblSetAnimate;
+        lv_obj_t* btnSetDisplaySeconds;
+        lv_obj_t* lblSetDisplaySeconds;
+        lv_obj_t* btnClose;
+        lv_obj_t* lblClose;
         uint32_t settingsAutoCloseTick = 0;
         void setMenuButtonsVisible(bool visible);
 
@@ -124,6 +128,8 @@ namespace Pinetime {
         // ### a watch should always tell the time ;)
 
         void drawWatchFace(bool visible = true);
+        void setTimeAnchorForDisplaySeconds(bool displaySeconds);
+        void realignTime();
         lv_obj_t* rect(bool visible, uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);
         lv_obj_t* circ(bool visible, uint8_t d, uint8_t x, uint8_t y, lv_color_t color);
         lv_obj_t* _base(bool visible, uint8_t w, uint8_t h, uint8_t x, uint8_t y, lv_color_t color);

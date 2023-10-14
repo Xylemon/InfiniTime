@@ -52,6 +52,7 @@ namespace Pinetime {
       struct WatchFaceStarTrek {
         bool useSystemFont = false;
         bool animate = true;
+        bool displaySeconds = false;
       };
 
       Settings(Pinetime::Controllers::FS& fs);
@@ -176,6 +177,17 @@ namespace Pinetime {
       void SetStarTrekAnimate(bool animate) {
         if (animate != settings.watchFaceStarTrek.animate) {
           settings.watchFaceStarTrek.animate = animate;
+          settingsChanged = true;
+        }
+      };
+
+      bool GetStarTrekDisplaySeconds() const {
+        return settings.watchFaceStarTrek.displaySeconds;
+      };
+
+      void SetStarTrekDisplaySeconds(bool displaySeconds) {
+        if (displaySeconds != settings.watchFaceStarTrek.displaySeconds) {
+          settings.watchFaceStarTrek.displaySeconds = displaySeconds;
           settingsChanged = true;
         }
       };
