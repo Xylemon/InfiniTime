@@ -13,6 +13,7 @@
 #include "components/motion/MotionController.h"
 #include "components/settings/Settings.h"
 using namespace Pinetime::Applications::Screens;
+using namespace Pinetime::Controllers;
 
 // ########## Color scheme
 constexpr lv_color_t COLOR_LIGHTBLUE = LV_COLOR_MAKE(0x83, 0xdd, 0xff);
@@ -20,6 +21,7 @@ constexpr lv_color_t COLOR_DARKBLUE = LV_COLOR_MAKE(0x09, 0x46, 0xee);
 constexpr lv_color_t COLOR_BLUE = LV_COLOR_MAKE(0x37, 0x86, 0xff);
 constexpr lv_color_t COLOR_ORANGE = LV_COLOR_MAKE(0xd4, 0x5f, 0x10);
 constexpr lv_color_t COLOR_DARKGRAY = LV_COLOR_MAKE(0x48, 0x60, 0x6c);
+constexpr lv_color_t COLOR_LIGHTGRAY = LV_COLOR_MAKE(0xdd, 0xdd, 0xdd);
 constexpr lv_color_t COLOR_BEIGE = LV_COLOR_MAKE(0xad, 0xa8, 0x8b);
 constexpr lv_color_t COLOR_BROWN = LV_COLOR_MAKE(0x64, 0x44, 0x00);
 constexpr lv_color_t COLOR_BLACK = LV_COLOR_MAKE(0x00, 0x00, 0x00);
@@ -38,14 +40,17 @@ constexpr lv_color_t COLOR_BG = COLOR_BLACK;
 constexpr char WANT_SYSTEM_FONT[12] = "System font";
 constexpr char WANT_ST_FONT[15] = "Star Trek font";
 constexpr char WANT_ST_FONT_BUT_NO[14] = "Not installed";
-constexpr char WANT_ANIMATE[8] = "Animate";
 constexpr char WANT_STATIC[7] = "Static";
+constexpr char WANT_ANIMATE_START[8] = "Startup";
+constexpr char WANT_ANIMATE_CONTINUOUS[6] = "Cont.";
+constexpr char WANT_ANIMATE_ALL[4] = "All";
 constexpr char WANT_SECONDS[8] = "Seconds";
 constexpr char WANT_MINUTES[8] = "Minutes";
 
 // ########## Timing constants
 constexpr uint16_t SETTINGS_AUTO_CLOSE_TICKS = 5000;
 constexpr uint16_t ANIMATOR_START_TICKS = 50;
+constexpr uint16_t ANIMATOR_CONTINUOUS_TICKS = 500;
 
 // ########## Touch handler
 namespace {
@@ -89,9 +94,11 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
     }
   }
 
-  if (settingsController.GetStarTrekAnimate()) {
+  animatorContinuousTick = lv_tick_get();
+  Settings::StarTrekAnimateType animateType = settingsController.GetStarTrekAnimate();
+  if (animateType == Settings::StarTrekAnimateType::All || animateType == Settings::StarTrekAnimateType::Start) {
     drawWatchFace(false);
-    startAnimation();
+    startStartAnimation();
   } else {
     drawWatchFace();
   }
@@ -276,8 +283,7 @@ void WatchFaceStarTrek::drawWatchFace(bool visible) {
     settingsController.GetStarTrekUseSystemFont() ? WANT_SYSTEM_FONT : (starTrekFontAvailable ? WANT_ST_FONT : WANT_ST_FONT_BUT_NO);
   lblSetUseSystemFont = label(true, COLOR_WHITE, btnSetUseSystemFont, LV_ALIGN_CENTER, 0, 0, label_sysfont, btnSetUseSystemFont);
   btnSetAnimate = button(false, 200, 50, btnSetUseSystemFont, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
-  const char* label_animate = settingsController.GetStarTrekAnimate() ? WANT_ANIMATE : WANT_STATIC;
-  lblSetAnimate = label(true, COLOR_WHITE, btnSetAnimate, LV_ALIGN_CENTER, 0, 0, label_animate, btnSetAnimate);
+  lblSetAnimate = label(true, COLOR_WHITE, btnSetAnimate, LV_ALIGN_CENTER, 0, 0, animateMenuButtonText(), btnSetAnimate);
   btnSetDisplaySeconds = button(false, 200, 50, btnSetAnimate, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
   const char* label_displaySeconds = settingsController.GetStarTrekDisplaySeconds() ? WANT_SECONDS : WANT_MINUTES;
   lblSetDisplaySeconds = label(true, COLOR_WHITE, btnSetDisplaySeconds, LV_ALIGN_CENTER, 0, 0, label_displaySeconds, btnSetDisplaySeconds);
@@ -466,12 +472,18 @@ void WatchFaceStarTrek::Refresh() {
     }
   }
 
-  if (settingsController.GetStarTrekAnimate()) {
-    if (animateType == AnimateType::Start && lv_tick_get() - animatorTick > ANIMATOR_START_TICKS) {
-      animateStartStep();
+  Settings::StarTrekAnimateType animateType = settingsController.GetStarTrekAnimate();
+  if (animateType != Settings::StarTrekAnimateType::None) {
+    if (animateType == Settings::StarTrekAnimateType::All || animateType == Settings::StarTrekAnimateType::Start) {
+      if (!startAnimationFinished && lv_tick_get() - animatorStartTick > ANIMATOR_START_TICKS) {
+        animateStartStep();
+      }
     }
-    // else if (animateType == AnimateType::TODO) {
-    // }
+    if (animateType == Settings::StarTrekAnimateType::All || animateType == Settings::StarTrekAnimateType::Continuous) {
+      if (lv_tick_get() - animatorContinuousTick > ANIMATOR_CONTINUOUS_TICKS) {
+        animateContinuousStep();
+      }
+    }
   }
 }
 
@@ -489,7 +501,7 @@ void WatchFaceStarTrek::updateFontTime() {
 }
 
 void WatchFaceStarTrek::animateStartStep() {
-  switch (animateStage) {
+  switch (animatorStartStage) {
     case 0:
       lv_obj_set_hidden(topRightRect, false);
       setShapeVisible(upperShape, PART_COUNT_UPPER_SHAPE, true);
@@ -529,10 +541,80 @@ void WatchFaceStarTrek::animateStartStep() {
       lv_obj_set_hidden(heartbeatValue, false);
       lv_obj_set_hidden(stepIcon, false);
       lv_obj_set_hidden(stepValue, false);
+      startAnimationFinished = true;
       break;
   }
-  animateStage++;
-  animatorTick = lv_tick_get();
+  animatorStartStage++;
+  animatorStartTick = lv_tick_get();
+}
+
+void WatchFaceStarTrek::animateContinuousStep() {
+  // if Start animation is also active, only act if it is already finished
+  if (settingsController.GetStarTrekAnimate() == Settings::StarTrekAnimateType::All && !startAnimationFinished)
+    return;
+
+  // flash the brackets
+  bool hidden = animatorContinuousStage == 7;
+  if (animatorContinuousStage > 6 && animatorContinuousStage < 9) {
+    setShapeVisible(bracket1, PART_COUNT_BRACKET, !hidden);
+    setShapeVisible(bracket2, PART_COUNT_BRACKET, !hidden);
+    lv_obj_set_hidden(stepIcon, hidden);
+    lv_obj_set_hidden(stepValue, hidden);
+  }
+
+  // walk down list with color change, change some panel colors
+  switch (animatorContinuousStage) {
+    case 0:
+      lv_obj_set_style_local_text_color(label_dayname, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_LIGHTGRAY);
+      break;
+    case 1:
+      lv_obj_set_hidden(bar1, true);
+      break;
+    case 2:
+      lv_obj_set_style_local_text_color(label_dayname, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
+      lv_obj_set_style_local_text_color(label_day, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_LIGHTGRAY);
+      lv_obj_set_hidden(bar2, true);
+      break;
+    case 3:
+      lv_obj_set_hidden(bar1, false);
+      lv_obj_set_style_local_bg_color(listItem3[0], LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DARKBLUE);
+      break;
+    case 4:
+      lv_obj_set_style_local_text_color(label_day, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
+      lv_obj_set_style_local_text_color(label_month, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_LIGHTGRAY);
+      lv_obj_set_hidden(bar2, false);
+      break;
+    case 5:
+      lv_obj_set_style_local_bg_color(topRightRect, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_BROWN);
+      break;
+    case 6:
+      lv_obj_set_style_local_text_color(label_month, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
+      lv_obj_set_style_local_text_color(label_year, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_LIGHTGRAY);
+      break;
+    case 7:
+      lv_obj_set_style_local_bg_color(listItem3[0], LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_LIGHTBLUE);
+      break;
+    case 8:
+      lv_obj_set_style_local_text_color(label_year, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
+      break;
+    case 10:
+      lv_obj_set_style_local_bg_color(topRightRect, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DARKGRAY);
+      break;
+    case 11:
+      animatorContinuousStage = 255; // overflows to 0 below
+      break;
+  }
+  animatorContinuousStage++;
+  animatorContinuousTick = lv_tick_get();
+}
+
+void WatchFaceStarTrek::resetColors() {
+  lv_obj_set_style_local_text_color(label_dayname, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
+  lv_obj_set_style_local_text_color(label_day, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
+  lv_obj_set_style_local_text_color(label_month, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
+  lv_obj_set_style_local_text_color(label_year, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
+  lv_obj_set_style_local_bg_color(listItem3[0], LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_LIGHTBLUE);
+  lv_obj_set_style_local_bg_color(topRightRect, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DARKGRAY);
 }
 
 void WatchFaceStarTrek::setShapeVisible(lv_obj_t** shape, uint8_t partcount, bool visible) {
@@ -577,11 +659,17 @@ void WatchFaceStarTrek::setMenuButtonsVisible(bool visible) {
   lv_obj_set_hidden(btnClose, !visible);
 }
 
-void WatchFaceStarTrek::startAnimation() {
-  animateType = AnimateType::Start;
+void WatchFaceStarTrek::startStartAnimation() {
   setVisible(false);
-  animatorTick = lv_tick_get();
-  animateStage = 0;
+  startAnimationFinished = false;
+  animatorStartTick = lv_tick_get();
+  animatorStartStage = 0;
+}
+
+void WatchFaceStarTrek::startContinuousAnimation() {
+  resetColors();
+  animatorContinuousTick = lv_tick_get();
+  animatorContinuousStage = 0;
 }
 
 // ########## Parent overrrides ################################################
@@ -607,14 +695,22 @@ bool WatchFaceStarTrek::OnButtonPushed() {
 }
 
 void WatchFaceStarTrek::OnLCDWakeup() {
-  if (settingsController.GetStarTrekAnimate()) {
-    startAnimation();
+  Settings::StarTrekAnimateType animateType = settingsController.GetStarTrekAnimate();
+  if (animateType == Settings::StarTrekAnimateType::All || animateType == Settings::StarTrekAnimateType::Start) {
+    startStartAnimation();
+  }
+  if (animateType == Settings::StarTrekAnimateType::All || animateType == Settings::StarTrekAnimateType::Continuous) {
+    startContinuousAnimation();
   }
 }
 
 void WatchFaceStarTrek::OnLCDSleep() {
-  if (settingsController.GetStarTrekAnimate()) {
+  Settings::StarTrekAnimateType animateType = settingsController.GetStarTrekAnimate();
+  if (animateType == Settings::StarTrekAnimateType::All || animateType == Settings::StarTrekAnimateType::Start) {
     setVisible(false);
+  }
+  if (animateType == Settings::StarTrekAnimateType::All || animateType == Settings::StarTrekAnimateType::Continuous) {
+    resetColors();
   }
 }
 
@@ -659,14 +755,15 @@ void WatchFaceStarTrek::UpdateSelected(lv_obj_t* object, lv_event_t event) {
     }
 
     if (object == btnSetAnimate) {
-      if (settingsController.GetStarTrekAnimate()) {
-        settingsController.SetStarTrekAnimate(false);
-        setVisible(true);
+      Settings::StarTrekAnimateType next = animateStateCycler(settingsController.GetStarTrekAnimate());
+      if (next == Settings::StarTrekAnimateType::All || next == Settings::StarTrekAnimateType::Start) {
+        startStartAnimation();
       } else {
-        settingsController.SetStarTrekAnimate(true);
-        startAnimation();
+        setVisible();
       }
-      lv_label_set_text_static(lblSetAnimate, settingsController.GetStarTrekAnimate() ? WANT_ANIMATE : WANT_STATIC);
+      resetColors();
+      settingsController.SetStarTrekAnimate(next);
+      lv_label_set_text_static(lblSetAnimate, animateMenuButtonText());
     }
 
     if (object == btnSetDisplaySeconds) {
@@ -683,4 +780,32 @@ void WatchFaceStarTrek::UpdateSelected(lv_obj_t* object, lv_event_t event) {
       lv_label_set_text_static(lblSetDisplaySeconds, settingsController.GetStarTrekDisplaySeconds() ? WANT_SECONDS : WANT_MINUTES);
     }
   }
+}
+
+const char* WatchFaceStarTrek::animateMenuButtonText() {
+  switch (settingsController.GetStarTrekAnimate()) {
+    case Settings::StarTrekAnimateType::All:
+      return WANT_ANIMATE_ALL;
+    case Settings::StarTrekAnimateType::Continuous:
+      return WANT_ANIMATE_CONTINUOUS;
+    case Settings::StarTrekAnimateType::Start:
+      return WANT_ANIMATE_START;
+    case Settings::StarTrekAnimateType::None:
+      return WANT_STATIC;
+  }
+  return "Error";
+}
+
+Settings::StarTrekAnimateType WatchFaceStarTrek::animateStateCycler(Settings::StarTrekAnimateType previous) {
+  switch (previous) {
+    case Settings::StarTrekAnimateType::All:
+      return Settings::StarTrekAnimateType::Start;
+    case Settings::StarTrekAnimateType::Start:
+      return Settings::StarTrekAnimateType::Continuous;
+    case Settings::StarTrekAnimateType::Continuous:
+      return Settings::StarTrekAnimateType::None;
+    case Settings::StarTrekAnimateType::None:
+      return Settings::StarTrekAnimateType::All;
+  }
+  return Settings::StarTrekAnimateType::None;
 }

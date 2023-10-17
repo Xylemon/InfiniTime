@@ -153,14 +153,20 @@ namespace Pinetime {
         bool starTrekFontAvailable = false;
         void updateFontTime();
 
-        enum class AnimateType { Start };
-        AnimateType animateType = AnimateType::Start;
-        uint32_t animatorTick = 0;
-        uint8_t animateStage = 0;
-        void setVisible(bool visible);
+        uint32_t animatorStartTick = 0;
+        uint32_t animatorContinuousTick = 0;
+        uint8_t animatorStartStage = 0;
+        uint8_t animatorContinuousStage = 0;
+        bool startAnimationFinished = false;
+        const char* animateMenuButtonText();
+        void setVisible(bool visible = true);
         void setShapeVisible(lv_obj_t** shape, uint8_t partcount, bool visible);
         void animateStartStep();
-        void startAnimation();
+        void startStartAnimation();
+        void animateContinuousStep();
+        void startContinuousAnimation();
+        void resetColors();
+        Controllers::Settings::StarTrekAnimateType animateStateCycler(Controllers::Settings::StarTrekAnimateType previous);
       };
     }
   }

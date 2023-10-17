@@ -35,6 +35,7 @@ namespace Pinetime {
       };
       enum class PTSGaugeStyle : uint8_t { Full, Half, Numeric };
       enum class PTSWeather : uint8_t { On, Off };
+      enum class StarTrekAnimateType { None, Start, Continuous, All };
 
       struct PineTimeStyle {
         Colors ColorTime = Colors::Teal;
@@ -51,7 +52,7 @@ namespace Pinetime {
 
       struct WatchFaceStarTrek {
         bool useSystemFont = false;
-        bool animate = true;
+        StarTrekAnimateType animate = StarTrekAnimateType::All;
         bool displaySeconds = false;
       };
 
@@ -170,11 +171,11 @@ namespace Pinetime {
         }
       };
 
-      bool GetStarTrekAnimate() const {
+      StarTrekAnimateType GetStarTrekAnimate() const {
         return settings.watchFaceStarTrek.animate;
       };
 
-      void SetStarTrekAnimate(bool animate) {
+      void SetStarTrekAnimate(StarTrekAnimateType animate) {
         if (animate != settings.watchFaceStarTrek.animate) {
           settings.watchFaceStarTrek.animate = animate;
           settingsChanged = true;
