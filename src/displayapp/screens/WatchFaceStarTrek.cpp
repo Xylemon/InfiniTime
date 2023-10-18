@@ -37,15 +37,15 @@ constexpr lv_color_t COLOR_BG = COLOR_BLACK;
 
 // ########### Config strings
 // watch out for sizes -> null teminated!
-constexpr char WANT_SYSTEM_FONT[12] = "System font";
-constexpr char WANT_ST_FONT[15] = "Star Trek font";
-constexpr char WANT_ST_FONT_BUT_NO[14] = "Not installed";
-constexpr char WANT_STATIC[7] = "Static";
-constexpr char WANT_ANIMATE_START[8] = "Startup";
-constexpr char WANT_ANIMATE_CONTINUOUS[6] = "Cont.";
-constexpr char WANT_ANIMATE_ALL[4] = "All";
-constexpr char WANT_SECONDS[8] = "Seconds";
-constexpr char WANT_MINUTES[8] = "Minutes";
+constexpr const char* WANT_SYSTEM_FONT = "System font";
+constexpr const char* WANT_ST_FONT = "Star Trek font";
+constexpr const char* WANT_ST_FONT_BUT_NO = "Not installed";
+constexpr const char* WANT_STATIC = "Static";
+constexpr const char* WANT_ANIMATE_START = "Startup";
+constexpr const char* WANT_ANIMATE_CONTINUOUS = "Cont.";
+constexpr const char* WANT_ANIMATE_ALL = "All";
+constexpr const char* WANT_SECONDS = "Seconds";
+constexpr const char* WANT_MINUTES = "Minutes";
 
 // ########## Timing constants
 constexpr uint16_t SETTINGS_AUTO_CLOSE_TICKS = 5000;
