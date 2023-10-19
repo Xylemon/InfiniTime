@@ -152,5 +152,6 @@ std::unique_ptr<Screen> Clock::WatchFaceStarTrekScreen() {
                                                       settingsController,
                                                       heartRateController,
                                                       motionController,
-                                                      filesystem);
+                                                      filesystem,
+                                                      weatherService);
 }

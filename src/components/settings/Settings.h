@@ -54,6 +54,7 @@ namespace Pinetime {
         bool useSystemFont = false;
         StarTrekAnimateType animate = StarTrekAnimateType::All;
         bool displaySeconds = false;
+        bool weather = true;
       };
 
       Settings(Pinetime::Controllers::FS& fs);
@@ -189,6 +190,17 @@ namespace Pinetime {
       void SetStarTrekDisplaySeconds(bool displaySeconds) {
         if (displaySeconds != settings.watchFaceStarTrek.displaySeconds) {
           settings.watchFaceStarTrek.displaySeconds = displaySeconds;
+          settingsChanged = true;
+        }
+      };
+
+      bool GetStarTrekWeather() const {
+        return settings.watchFaceStarTrek.weather;
+      };
+
+      void SetStarTrekWeather(bool weather) {
+        if (weather != settings.watchFaceStarTrek.weather) {
+          settings.watchFaceStarTrek.weather = weather;
           settingsChanged = true;
         }
       };

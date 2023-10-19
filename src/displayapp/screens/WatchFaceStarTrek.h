@@ -10,7 +10,6 @@
 #include "components/ble/BleController.h"
 #include "utility/DirtyValue.h"
 
-constexpr uint8_t PART_COUNT_ICON_SPACE = 2;
 constexpr uint8_t PART_COUNT_LIST_ITEM = 3;
 constexpr uint8_t PART_COUNT_UPPER_SHAPE = 6;
 constexpr uint8_t PART_COUNT_LOWER_SHAPE = 7;
@@ -24,6 +23,7 @@ namespace Pinetime {
     class NotificationManager;
     class HeartRateController;
     class MotionController;
+    class WeatherService;
   }
 
   namespace Applications {
@@ -38,7 +38,8 @@ namespace Pinetime {
                           Controllers::Settings& settingsController,
                           Controllers::HeartRateController& heartRateController,
                           Controllers::MotionController& motionController,
-                          Controllers::FS& filesystem);
+                          Controllers::FS& filesystem,
+                          Controllers::WeatherService& weatherService);
         ~WatchFaceStarTrek() override;
 
         bool OnTouchEvent(TouchEvents event) override;
@@ -58,6 +59,7 @@ namespace Pinetime {
         Controllers::HeartRateController& heartRateController;
         Controllers::MotionController& motionController;
         Controllers::FS& filesystem;
+        Controllers::WeatherService& weatherService;
 
         lv_task_t* taskRefresh;
 
@@ -78,6 +80,9 @@ namespace Pinetime {
         Utility::DirtyValue<uint8_t> heartbeat {};
         Utility::DirtyValue<bool> heartbeatRunning {};
         Utility::DirtyValue<bool> notificationState {};
+        Utility::DirtyValue<int16_t> nowTemp {};
+        Utility::DirtyValue<int16_t> clouds {};
+        Utility::DirtyValue<int16_t> precip {};
 
         lv_obj_t* label_time_hour_1;
         lv_obj_t* label_time_hour_10;
@@ -97,11 +102,12 @@ namespace Pinetime {
         lv_obj_t* stepValue;
         lv_obj_t* notificationIcon;
         BatteryIcon batteryIcon;
+        lv_obj_t* weatherIcon;
+        lv_obj_t* temperature;
 
         // background
         lv_obj_t *topRightRect, *bottomRightRect;
         lv_obj_t *bar1, *bar2;
-        lv_obj_t* iconSpace[PART_COUNT_ICON_SPACE];
         lv_obj_t* listItem1[PART_COUNT_LIST_ITEM];
         lv_obj_t* listItem2[PART_COUNT_LIST_ITEM];
         lv_obj_t* listItem3[PART_COUNT_LIST_ITEM];
@@ -117,6 +123,8 @@ namespace Pinetime {
         lv_obj_t* lblSetUseSystemFont;
         lv_obj_t* btnSetAnimate;
         lv_obj_t* lblSetAnimate;
+        lv_obj_t* btnSetWeather;
+        lv_obj_t* lblSetWeather;
         lv_obj_t* btnSetDisplaySeconds;
         lv_obj_t* lblSetDisplaySeconds;
         lv_obj_t* btnClose;
