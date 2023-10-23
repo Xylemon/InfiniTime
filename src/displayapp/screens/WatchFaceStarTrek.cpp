@@ -13,6 +13,8 @@
 #include "components/motion/MotionController.h"
 #include "components/ble/weather/WeatherService.h"
 #include "components/settings/Settings.h"
+#include "displayapp/icons/watchfacestartrek/bracket_left.c"
+#include "displayapp/icons/watchfacestartrek/bracket_right.c"
 using namespace Pinetime::Applications::Screens;
 using namespace Pinetime::Controllers;
 
@@ -37,7 +39,6 @@ constexpr lv_color_t COLOR_STEPS = COLOR_BEIGE;
 constexpr lv_color_t COLOR_BG = COLOR_BLACK;
 
 // ########### Config strings
-// watch out for sizes -> null teminated!
 constexpr const char* WANT_SYSTEM_FONT = "System font";
 constexpr const char* WANT_ST_FONT = "Star Trek font";
 constexpr const char* WANT_ST_FONT_BUT_NO = "Not installed";
@@ -186,63 +187,24 @@ void WatchFaceStarTrek::drawWatchFace(bool visible) {
   bar2 = rect(visible, barwidth, cellheight, bar2_x, bar_y, COLOR_DARKGRAY);
 
   // small brackets
-  // -- global location
-  constexpr uint8_t bracket_y = 182;
-  constexpr uint8_t leftbracket_x = 109;
-  constexpr uint8_t rightbracket_x = 237;
-  constexpr uint8_t bgap = 1;
-  // -- dimensions of shapes
-  constexpr uint8_t bracketrect1_w = 9;
-  constexpr uint8_t bracketrect1_h = 3;
-  constexpr uint8_t bracketrect2_h = 9;
-  constexpr uint8_t vertical_w = 4;
-  constexpr uint8_t smallrect_h = 6;
-  constexpr uint8_t largerect_h = 22;
-  constexpr uint8_t stickout_w = 3;
-  constexpr uint8_t stickout_h = 4;
-  constexpr uint8_t bcirc_d = 6;
-  constexpr uint8_t scirc_d = 4;
-  constexpr uint8_t bcircshift = 3;
-  constexpr uint8_t scircshift = 4;
-  // -- positions
-  constexpr uint8_t vertical_x = leftbracket_x + vertical_w + bgap;
-  constexpr uint8_t vertical2_x = vertical_x + vertical_w;
-  constexpr uint8_t stickout_y = bracket_y + bracketrect1_h + bgap;
-  constexpr uint8_t largerect_y = stickout_y + stickout_h + bgap;
-  constexpr uint8_t smallrect1_y = bracket_y + bracketrect1_h + bracketrect2_h + bgap;
-  constexpr uint8_t smallrect2_y = smallrect1_y + smallrect_h + bgap;
-  constexpr uint8_t bottom1_y = smallrect2_y + smallrect_h + bgap;
-  constexpr uint8_t stickout2_y = largerect_y + largerect_h + bgap;
-  constexpr uint8_t bottom2_y = bottom1_y + bracketrect2_h;
-  constexpr uint8_t rightvertical_x = rightbracket_x - 2 * vertical_w - bgap;
-
-  bracket1[0] = rect(visible, vertical_w, largerect_h, leftbracket_x, largerect_y, COLOR_DARKBLUE);
-  bracket1[1] = rect(visible, bracketrect1_w, bracketrect1_h, vertical2_x, bracket_y, COLOR_LIGHTBLUE);
-  bracket1[2] = circ(visible, bcirc_d, vertical_x, bracket_y, COLOR_LIGHTBLUE);
-  bracket1[3] = rect(visible, vertical_w, bracketrect2_h, vertical_x, bracket_y + bracketrect1_h, COLOR_LIGHTBLUE);
-  bracket1[4] = circ(visible, scirc_d, vertical2_x, bracket_y + bracketrect1_h, COLOR_BLACK);
-  bracket1[5] = rect(visible, stickout_w, stickout_h, vertical_x - stickout_w, stickout_y, COLOR_LIGHTBLUE);
-  bracket1[6] = rect(visible, vertical_w, smallrect_h, vertical_x, smallrect1_y, COLOR_DARKGRAY);
-  bracket1[7] = rect(visible, vertical_w, smallrect_h, vertical_x, smallrect2_y, COLOR_ORANGE);
-  bracket1[8] = rect(visible, vertical_w, bracketrect2_h, vertical_x, bottom1_y, COLOR_LIGHTBLUE);
-  bracket1[9] = rect(visible, stickout_w, stickout_h, vertical_x - stickout_w, stickout2_y, COLOR_LIGHTBLUE);
-  bracket1[10] = circ(visible, bcirc_d, vertical_x, bottom2_y - bcircshift, COLOR_LIGHTBLUE);
-  bracket1[11] = rect(visible, bracketrect1_w, bracketrect1_h, vertical2_x, bottom2_y, COLOR_LIGHTBLUE);
-  bracket1[12] = circ(visible, scirc_d, vertical2_x, bottom2_y - scircshift, COLOR_BLACK);
-
-  bracket2[0] = rect(visible, vertical_w, largerect_h, rightbracket_x - vertical_w, largerect_y, COLOR_DARKBLUE);
-  bracket2[1] = rect(visible, bracketrect1_w, bracketrect1_h, rightvertical_x - bracketrect1_w, bracket_y, COLOR_LIGHTBLUE);
-  bracket2[2] = circ(visible, bcirc_d, rightvertical_x - bcircshift + 1, bracket_y, COLOR_LIGHTBLUE);
-  bracket2[3] = rect(visible, vertical_w, bracketrect2_h, rightvertical_x, bracket_y + bracketrect1_h, COLOR_LIGHTBLUE);
-  bracket2[4] = circ(visible, scirc_d, rightvertical_x - scirc_d, bracket_y + bracketrect1_h, COLOR_BLACK);
-  bracket2[5] = rect(visible, stickout_w, stickout_h, rightvertical_x + vertical_w, stickout_y, COLOR_LIGHTBLUE);
-  bracket2[6] = rect(visible, vertical_w, smallrect_h, rightvertical_x, smallrect1_y, COLOR_ORANGE);
-  bracket2[7] = rect(visible, vertical_w, smallrect_h, rightvertical_x, smallrect2_y, COLOR_DARKGRAY);
-  bracket2[8] = rect(visible, vertical_w, bracketrect2_h, rightvertical_x, bottom1_y, COLOR_LIGHTBLUE);
-  bracket2[9] = rect(visible, stickout_w, stickout_h, rightvertical_x + vertical_w, stickout2_y, COLOR_LIGHTBLUE);
-  bracket2[10] = circ(visible, bcirc_d, rightvertical_x - bcircshift + 1, bottom2_y - bcircshift, COLOR_LIGHTBLUE);
-  bracket2[11] = rect(visible, bracketrect1_w, bracketrect1_h, rightvertical_x - bracketrect1_w, bottom2_y, COLOR_LIGHTBLUE);
-  bracket2[12] = circ(visible, scirc_d, rightvertical_x - scirc_d, bottom2_y - scircshift, COLOR_BLACK);
+  constexpr uint8_t bracket_y = 183;
+  constexpr uint8_t leftbracket_x = 110;
+  constexpr uint8_t rightbracket_x = 220;
+  constexpr uint8_t bracket_rect_w = 3;
+  constexpr uint8_t bracket_rect_h = 22;
+  constexpr uint8_t bracket_rect_y = bracket_y + 8;
+  constexpr uint8_t leftbracket_rect_x = leftbracket_x - 1;
+  constexpr uint8_t rightbracket_rect_x = rightbracket_x + 14;
+  imgBracketLeft = lv_img_create(lv_scr_act(), nullptr);
+  lv_obj_set_hidden(imgBracketLeft, !visible);
+  lv_img_set_src(imgBracketLeft, &bracket_left);
+  lv_obj_set_pos(imgBracketLeft, leftbracket_x, bracket_y);
+  rectBracketLeft = rect(visible, bracket_rect_w, bracket_rect_h, leftbracket_rect_x, bracket_rect_y, COLOR_DARKBLUE);
+  imgBracketRight = lv_img_create(lv_scr_act(), nullptr);
+  lv_obj_set_hidden(imgBracketRight, !visible);
+  lv_img_set_src(imgBracketRight, &bracket_right);
+  lv_obj_set_pos(imgBracketRight, rightbracket_x, bracket_y);
+  rectBracketRight = rect(visible, bracket_rect_w, bracket_rect_h, rightbracket_rect_x, bracket_rect_y, COLOR_DARKBLUE);
 
   batteryIcon.Create(lv_scr_act());
   batteryIcon.SetVisible(visible);
@@ -279,7 +241,7 @@ void WatchFaceStarTrek::drawWatchFace(bool visible) {
   lv_obj_set_style_local_text_font(weatherIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &fontawesome_weathericons);
   heartbeatIcon = label(visible, COLOR_HEARTBEAT_OFF, lowerShape[3], LV_ALIGN_IN_TOP_LEFT, 5, gap, Symbols::heartBeat);
   heartbeatValue = label(visible, COLOR_ICONS, heartbeatIcon, LV_ALIGN_OUT_RIGHT_MID, 5);
-  stepIcon = label(visible, COLOR_STEPS, bracket1[0], LV_ALIGN_OUT_RIGHT_MID, 13, 0, Symbols::shoe);
+  stepIcon = label(visible, COLOR_STEPS, imgBracketLeft, LV_ALIGN_OUT_RIGHT_MID, -2, 0, Symbols::shoe);
   stepValue = label(visible, COLOR_STEPS, stepIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0, "0");
 
   // menu buttons
@@ -580,8 +542,10 @@ void WatchFaceStarTrek::animateStartStep() {
     case 6:
       lv_obj_set_hidden(bar1, false);
       lv_obj_set_hidden(bar2, false);
-      setShapeVisible(bracket1, PART_COUNT_BRACKET, true);
-      setShapeVisible(bracket2, PART_COUNT_BRACKET, true);
+      lv_obj_set_hidden(imgBracketLeft, false);
+      lv_obj_set_hidden(rectBracketLeft, false);
+      lv_obj_set_hidden(imgBracketRight, false);
+      lv_obj_set_hidden(rectBracketRight, false);
       lv_obj_set_hidden(heartbeatIcon, false);
       lv_obj_set_hidden(heartbeatValue, false);
       lv_obj_set_hidden(stepIcon, false);
@@ -601,10 +565,8 @@ void WatchFaceStarTrek::animateContinuousStep() {
   // flash the brackets
   bool hidden = animatorContinuousStage == 7;
   if (animatorContinuousStage > 6 && animatorContinuousStage < 9) {
-    setShapeVisible(bracket1, PART_COUNT_BRACKET, !hidden);
-    setShapeVisible(bracket2, PART_COUNT_BRACKET, !hidden);
-    lv_obj_set_hidden(stepIcon, hidden);
-    lv_obj_set_hidden(stepValue, hidden);
+    lv_obj_set_hidden(imgBracketLeft, hidden);
+    lv_obj_set_hidden(imgBracketRight, hidden);
   }
 
   // walk down list with color change, change some panel colors
@@ -635,12 +597,18 @@ void WatchFaceStarTrek::animateContinuousStep() {
     case 6:
       lv_obj_set_style_local_text_color(label_month, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
       lv_obj_set_style_local_text_color(label_year, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_LIGHTGRAY);
+      lv_obj_set_hidden(rectBracketLeft, true);
+      lv_obj_set_hidden(rectBracketRight, true);
       break;
     case 7:
       lv_obj_set_style_local_bg_color(listItem3[0], LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_LIGHTBLUE);
       break;
     case 8:
       lv_obj_set_style_local_text_color(label_year, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DATE);
+      break;
+    case 9:
+      lv_obj_set_hidden(rectBracketLeft, false);
+      lv_obj_set_hidden(rectBracketRight, false);
       break;
     case 10:
       lv_obj_set_style_local_bg_color(topRightRect, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, COLOR_DARKGRAY);
@@ -694,8 +662,10 @@ void WatchFaceStarTrek::setVisible(bool visible) {
   lv_obj_set_hidden(stepValue, !visible);
   lv_obj_set_hidden(weatherIcon, !visible);
   lv_obj_set_hidden(temperature, !visible);
-  setShapeVisible(bracket1, PART_COUNT_BRACKET, visible);
-  setShapeVisible(bracket2, PART_COUNT_BRACKET, visible);
+  lv_obj_set_hidden(imgBracketLeft, !visible);
+  lv_obj_set_hidden(rectBracketLeft, !visible);
+  lv_obj_set_hidden(imgBracketRight, !visible);
+  lv_obj_set_hidden(rectBracketRight, !visible);
 }
 
 void WatchFaceStarTrek::setMenuButtonsVisible(bool visible) {

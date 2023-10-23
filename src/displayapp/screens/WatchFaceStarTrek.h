@@ -13,7 +13,6 @@
 constexpr uint8_t PART_COUNT_LIST_ITEM = 3;
 constexpr uint8_t PART_COUNT_UPPER_SHAPE = 6;
 constexpr uint8_t PART_COUNT_LOWER_SHAPE = 7;
-constexpr uint8_t PART_COUNT_BRACKET = 13;
 
 namespace Pinetime {
   namespace Controllers {
@@ -114,8 +113,10 @@ namespace Pinetime {
         lv_obj_t* listItem4[PART_COUNT_LIST_ITEM];
         lv_obj_t* upperShape[PART_COUNT_UPPER_SHAPE];
         lv_obj_t* lowerShape[PART_COUNT_LOWER_SHAPE];
-        lv_obj_t* bracket1[PART_COUNT_BRACKET];
-        lv_obj_t* bracket2[PART_COUNT_BRACKET];
+        lv_obj_t* imgBracketLeft;
+        lv_obj_t* rectBracketLeft;
+        lv_obj_t* imgBracketRight;
+        lv_obj_t* rectBracketRight;
         lv_obj_t *minuteAnchor, *hourAnchor;
 
         // config menu
