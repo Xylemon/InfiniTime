@@ -43,13 +43,14 @@ constexpr const char* WANT_SYSTEM_FONT = "System font";
 constexpr const char* WANT_ST_FONT = "Star Trek font";
 constexpr const char* WANT_ST_FONT_BUT_NO = "Not installed";
 constexpr const char* WANT_STATIC = "Static";
-constexpr const char* WANT_ANIMATE_START = "Startup";
-constexpr const char* WANT_ANIMATE_CONTINUOUS = "Cont.";
-constexpr const char* WANT_ANIMATE_ALL = "All";
+constexpr const char* WANT_ANIMATE_START = "Startup Animation";
+constexpr const char* WANT_ANIMATE_CONTINUOUS = "Continuous Anim.";
+constexpr const char* WANT_ANIMATE_ALL = "All Animations";
 constexpr const char* WANT_WEATHER = "Weather";
 constexpr const char* WANT_NO_WEATHER = "No Weather";
 constexpr const char* WANT_SECONDS = "Seconds";
 constexpr const char* WANT_MINUTES = "Minutes";
+constexpr const char* TEXT_ERROR = "Error";
 
 // ########## Timing constants
 constexpr uint16_t SETTINGS_AUTO_CLOSE_TICKS = 5000;
@@ -248,22 +249,6 @@ void WatchFaceStarTrek::drawWatchFace(bool visible) {
   lv_obj_set_style_local_bg_color(stepBar, LV_BAR_PART_INDIC, LV_STATE_DEFAULT, COLOR_STEPS);
   lv_obj_set_size(stepBar, 92, 3);
   lv_obj_align(stepBar, imgBracketLeft, LV_ALIGN_OUT_RIGHT_BOTTOM, 1, 0);
-
-  // menu buttons
-  btnSetUseSystemFont = button(false, 228, 50, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 8);
-  const char* label_sysfont =
-    settingsController.GetStarTrekUseSystemFont() ? WANT_SYSTEM_FONT : (starTrekFontAvailable ? WANT_ST_FONT : WANT_ST_FONT_BUT_NO);
-  lblSetUseSystemFont = label(true, COLOR_WHITE, btnSetUseSystemFont, LV_ALIGN_CENTER, 0, 0, label_sysfont, btnSetUseSystemFont);
-  btnSetAnimate = button(false, 228, 50, btnSetUseSystemFont, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
-  lblSetAnimate = label(true, COLOR_WHITE, btnSetAnimate, LV_ALIGN_CENTER, 0, 0, animateMenuButtonText(), btnSetAnimate);
-  btnSetWeather = button(false, 228, 50, btnSetAnimate, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
-  const char* label_weather = settingsController.GetStarTrekWeather() ? WANT_WEATHER : WANT_NO_WEATHER;
-  lblSetWeather = label(true, COLOR_WHITE, btnSetWeather, LV_ALIGN_CENTER, 0, 0, label_weather, btnSetWeather);
-  btnSetDisplaySeconds = button(false, 136, 50, lv_scr_act(), LV_ALIGN_IN_BOTTOM_LEFT, 8, -8);
-  const char* label_displaySeconds = settingsController.GetStarTrekDisplaySeconds() ? WANT_SECONDS : WANT_MINUTES;
-  lblSetDisplaySeconds = label(true, COLOR_WHITE, btnSetDisplaySeconds, LV_ALIGN_CENTER, 0, 0, label_displaySeconds, btnSetDisplaySeconds);
-  btnClose = button(false, 80, 50, btnSetDisplaySeconds, LV_ALIGN_OUT_RIGHT_MID, 8);
-  lblClose = label(true, COLOR_WHITE, btnClose, LV_ALIGN_CENTER, 0, 0, "X", btnClose);
 }
 
 void WatchFaceStarTrek::setTimeAnchorForDisplaySeconds(bool displaySeconds) {
@@ -339,7 +324,6 @@ lv_obj_t* WatchFaceStarTrek::button(bool visible,
   lv_obj_align(btn, alignto, alignmode, gapx, gapy);
   lv_obj_set_style_local_bg_opa(btn, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_70);
   lv_obj_set_event_cb(btn, event_handler);
-  lv_obj_set_hidden(btn, true);
   return btn;
 }
 
@@ -447,11 +431,11 @@ void WatchFaceStarTrek::Refresh() {
       nowTemp = weatherService.GetCurrentTemperature()->temperature / 100;
       clouds = weatherService.GetCurrentClouds()->amount;
       precip = weatherService.GetCurrentPrecipitation()->amount;
-      if (nowTemp.IsUpdated()) {
+      if (weatherNeedsRefresh || nowTemp.IsUpdated()) {
         lv_label_set_text_fmt(temperature, "%d°", nowTemp.Get());
         lv_obj_realign(temperature);
       }
-      if (clouds.IsUpdated() || precip.IsUpdated()) {
+      if (weatherNeedsRefresh || clouds.IsUpdated() || precip.IsUpdated()) {
         uint16_t c = clouds.Get();
         uint16_t p = clouds.Get();
         // this figuring out what icon to display could be done by weather service itself.
@@ -469,6 +453,7 @@ void WatchFaceStarTrek::Refresh() {
         };
         lv_obj_realign(weatherIcon);
       }
+    weatherNeedsRefresh = false;
     } else {
       lv_label_set_text_static(temperature, "--");
       lv_label_set_text(weatherIcon, "");
@@ -477,9 +462,9 @@ void WatchFaceStarTrek::Refresh() {
     }
   }
 
-  if (!lv_obj_get_hidden(btnClose)) {
+  if (showingMenu) {
     if ((settingsAutoCloseTick > 0) && (lv_tick_get() - settingsAutoCloseTick > SETTINGS_AUTO_CLOSE_TICKS)) {
-      setMenuButtonsVisible(false);
+      destroyMenu();
       settingsAutoCloseTick = 0;
     }
   }
@@ -677,14 +662,6 @@ void WatchFaceStarTrek::setVisible(bool visible) {
   lv_obj_set_hidden(rectBracketRight, !visible);
 }
 
-void WatchFaceStarTrek::setMenuButtonsVisible(bool visible) {
-  lv_obj_set_hidden(btnSetUseSystemFont, !visible);
-  lv_obj_set_hidden(btnSetAnimate, !visible);
-  lv_obj_set_hidden(btnSetDisplaySeconds, !visible);
-  lv_obj_set_hidden(btnSetWeather, !visible);
-  lv_obj_set_hidden(btnClose, !visible);
-}
-
 void WatchFaceStarTrek::startStartAnimation() {
   setVisible(false);
   startAnimationFinished = false;
@@ -701,20 +678,20 @@ void WatchFaceStarTrek::startContinuousAnimation() {
 // ########## Parent overrrides ################################################
 
 bool WatchFaceStarTrek::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
-  if ((event == Pinetime::Applications::TouchEvents::LongTap) && lv_obj_get_hidden(btnClose)) {
-    setMenuButtonsVisible(true);
+  if ((event == Pinetime::Applications::TouchEvents::LongTap) && !showingMenu) {
+    createMenu();
     settingsAutoCloseTick = lv_tick_get();
     return true;
   }
-  if ((event == Pinetime::Applications::TouchEvents::DoubleTap) && (lv_obj_get_hidden(btnClose) == false)) {
+  if ((event == Pinetime::Applications::TouchEvents::DoubleTap) && showingMenu) {
     return true;
   }
   return false;
 }
 
 bool WatchFaceStarTrek::OnButtonPushed() {
-  if (!lv_obj_get_hidden(btnClose)) {
-    setMenuButtonsVisible(false);
+  if (showingMenu) {
+    destroyMenu();
     return true;
   }
   return false;
@@ -742,13 +719,41 @@ void WatchFaceStarTrek::OnLCDSleep() {
 
 // ########## Config handling ##################################################
 
+void WatchFaceStarTrek::createMenu() {
+  btnSetUseSystemFont = button(true, 224, 50, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 8);
+  const char* label_sysfont =
+    settingsController.GetStarTrekUseSystemFont() ? WANT_SYSTEM_FONT : (starTrekFontAvailable ? WANT_ST_FONT : WANT_ST_FONT_BUT_NO);
+  lblSetUseSystemFont = label(true, COLOR_WHITE, btnSetUseSystemFont, LV_ALIGN_CENTER, 0, 0, label_sysfont, btnSetUseSystemFont);
+  btnSetAnimate = button(true, 224, 50, btnSetUseSystemFont, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+  lblSetAnimate = label(true, COLOR_WHITE, btnSetAnimate, LV_ALIGN_CENTER, 0, 0, animateMenuButtonText(), btnSetAnimate);
+  btnSetWeather = button(true, 224, 50, btnSetAnimate, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+  const char* label_weather = settingsController.GetStarTrekWeather() ? WANT_WEATHER : WANT_NO_WEATHER;
+  lblSetWeather = label(true, COLOR_WHITE, btnSetWeather, LV_ALIGN_CENTER, 0, 0, label_weather, btnSetWeather);
+  btnSetDisplaySeconds = button(true, 132, 50, lv_scr_act(), LV_ALIGN_IN_BOTTOM_LEFT, 8, -8);
+  const char* label_displaySeconds = settingsController.GetStarTrekDisplaySeconds() ? WANT_SECONDS : WANT_MINUTES;
+  lblSetDisplaySeconds = label(true, COLOR_WHITE, btnSetDisplaySeconds, LV_ALIGN_CENTER, 0, 0, label_displaySeconds, btnSetDisplaySeconds);
+  btnClose = button(true, 80, 50, btnSetDisplaySeconds, LV_ALIGN_OUT_RIGHT_MID, 8);
+  lblClose = label(true, COLOR_WHITE, btnClose, LV_ALIGN_CENTER, 0, 0, "X", btnClose);
+  showingMenu = true;
+}
+
+void WatchFaceStarTrek::destroyMenu() {
+  settingsController.SaveSettings();
+  lv_obj_del(btnSetUseSystemFont);
+  lv_obj_del(btnSetAnimate);
+  lv_obj_del(btnSetDisplaySeconds);
+  lv_obj_del(btnSetWeather);
+  lv_obj_del(btnClose);
+  showingMenu = false;
+}
+
 void WatchFaceStarTrek::UpdateSelected(lv_obj_t* object, lv_event_t event) {
   if (event == LV_EVENT_CLICKED) {
 
     settingsAutoCloseTick = lv_tick_get();
 
     if (object == btnClose) {
-      setMenuButtonsVisible(false);
+      destroyMenu();
     }
 
     if (object == btnSetUseSystemFont) {
@@ -814,7 +819,7 @@ void WatchFaceStarTrek::UpdateSelected(lv_obj_t* object, lv_event_t event) {
         lv_label_set_text_static(lblSetWeather, WANT_NO_WEATHER);
       } else {
         settingsController.SetStarTrekWeather(true);
-        // icon and temp will be set by next refresh
+        weatherNeedsRefresh = true;
         lv_label_set_text_static(lblSetWeather, WANT_WEATHER);
       }
     }
@@ -832,7 +837,7 @@ const char* WatchFaceStarTrek::animateMenuButtonText() {
     case Settings::StarTrekAnimateType::None:
       return WANT_STATIC;
   }
-  return "Error";
+  return TEXT_ERROR;
 }
 
 Settings::StarTrekAnimateType WatchFaceStarTrek::animateStateCycler(Settings::StarTrekAnimateType previous) {

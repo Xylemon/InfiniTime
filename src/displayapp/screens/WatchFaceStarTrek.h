@@ -132,7 +132,9 @@ namespace Pinetime {
         lv_obj_t* btnClose;
         lv_obj_t* lblClose;
         uint32_t settingsAutoCloseTick = 0;
-        void setMenuButtonsVisible(bool visible);
+        bool showingMenu = false;
+        void createMenu();
+        void destroyMenu();
 
         // ### visibility functions affect everything BUT the time digits
         // ### a watch should always tell the time ;)
@@ -162,6 +164,8 @@ namespace Pinetime {
         lv_font_t* font_time = nullptr;
         bool starTrekFontAvailable = false;
         void updateFontTime();
+
+        bool weatherNeedsRefresh = false;
 
         uint32_t animatorStartTick = 0;
         uint32_t animatorContinuousTick = 0;
