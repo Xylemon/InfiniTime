@@ -95,7 +95,8 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
     font_time = &jetbrains_mono_extrabold_compressed;
   } else {
     if (starTrekFontAvailable) {
-      font_time = lv_font_load("F:/fonts/edge_of_the_galaxy.bin");
+      font_StarTrek = lv_font_load("F:/fonts/edge_of_the_galaxy.bin");
+      font_time = font_StarTrek;
     } else {
       font_time = &jetbrains_mono_extrabold_compressed;
     }
@@ -117,8 +118,8 @@ WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
 WatchFaceStarTrek::~WatchFaceStarTrek() {
   lv_task_del(taskRefresh);
 
-  if (starTrekFontAvailable && !settingsController.GetStarTrekUseSystemFont() && font_time != nullptr) {
-    lv_font_free(font_time);
+  if (font_StarTrek != nullptr) {
+    lv_font_free(font_StarTrek);
   }
 
   lv_obj_clean(lv_scr_act());
@@ -453,7 +454,7 @@ void WatchFaceStarTrek::Refresh() {
         };
         lv_obj_realign(weatherIcon);
       }
-    weatherNeedsRefresh = false;
+      weatherNeedsRefresh = false;
     } else {
       lv_label_set_text_static(temperature, "--");
       lv_label_set_text(weatherIcon, "");
@@ -761,18 +762,16 @@ void WatchFaceStarTrek::UpdateSelected(lv_obj_t* object, lv_event_t event) {
       // ST font was not used and shall be used now
       if (starTrekFontAvailable && usedSystem) {
         lv_label_set_text_static(lblSetUseSystemFont, WANT_ST_FONT);
-        font_time = lv_font_load("F:/fonts/edge_of_the_galaxy.bin");
-        // give font time to be loaded, this can possibly be lowered
-        vTaskDelay(100);
+        if (font_StarTrek == nullptr) {
+          font_StarTrek = lv_font_load("F:/fonts/edge_of_the_galaxy.bin");
+        }
+        font_time = font_StarTrek;
         updateFontTime();
         usedSystem = false;
       }
       // ST font was used and gets deactivated
       else if (starTrekFontAvailable && !usedSystem) {
         lv_label_set_text_static(lblSetUseSystemFont, WANT_SYSTEM_FONT);
-        if (font_time != nullptr) {
-          lv_font_free(font_time);
-        }
         font_time = &jetbrains_mono_extrabold_compressed;
         updateFontTime();
         usedSystem = true;

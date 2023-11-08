@@ -162,6 +162,7 @@ namespace Pinetime {
                          int16_t gapy = 0);
 
         lv_font_t* font_time = nullptr;
+        lv_font_t* font_StarTrek = nullptr;
         bool starTrekFontAvailable = false;
         void updateFontTime();
 
