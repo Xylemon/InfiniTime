@@ -99,6 +99,7 @@ namespace Pinetime {
         lv_obj_t* heartbeatValue;
         lv_obj_t* stepIcon;
         lv_obj_t* stepValue;
+        lv_obj_t* stepBar;
         lv_obj_t* notificationIcon;
         BatteryIcon batteryIcon;
         lv_obj_t* weatherIcon;

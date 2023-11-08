@@ -243,6 +243,11 @@ void WatchFaceStarTrek::drawWatchFace(bool visible) {
   heartbeatValue = label(visible, COLOR_ICONS, heartbeatIcon, LV_ALIGN_OUT_RIGHT_MID, 5);
   stepIcon = label(visible, COLOR_STEPS, imgBracketLeft, LV_ALIGN_OUT_RIGHT_MID, -2, 0, Symbols::shoe);
   stepValue = label(visible, COLOR_STEPS, stepIcon, LV_ALIGN_OUT_RIGHT_MID, 5, 0, "0");
+  stepBar = lv_bar_create(lv_scr_act(), nullptr);
+  lv_obj_set_hidden(stepBar, !visible);
+  lv_obj_set_style_local_bg_color(stepBar, LV_BAR_PART_INDIC, LV_STATE_DEFAULT, COLOR_STEPS);
+  lv_obj_set_size(stepBar, 92, 3);
+  lv_obj_align(stepBar, imgBracketLeft, LV_ALIGN_OUT_RIGHT_BOTTOM, 1, 0);
 
   // menu buttons
   btnSetUseSystemFont = button(false, 228, 50, lv_scr_act(), LV_ALIGN_IN_TOP_MID, 0, 8);
@@ -433,6 +438,7 @@ void WatchFaceStarTrek::Refresh() {
   if (stepCount.IsUpdated()) {
     lv_label_set_text_fmt(stepValue, "%lu", stepCount.Get());
     lv_obj_realign(stepValue);
+    lv_bar_set_value(stepBar, stepCount.Get() * 100 / settingsController.GetStepsGoal(), LV_ANIM_OFF);
   }
 
   if (settingsController.GetStarTrekWeather()) {
@@ -550,6 +556,7 @@ void WatchFaceStarTrek::animateStartStep() {
       lv_obj_set_hidden(heartbeatValue, false);
       lv_obj_set_hidden(stepIcon, false);
       lv_obj_set_hidden(stepValue, false);
+      lv_obj_set_hidden(stepBar, false);
       startAnimationFinished = true;
       break;
   }
@@ -567,6 +574,7 @@ void WatchFaceStarTrek::animateContinuousStep() {
   if (animatorContinuousStage > 6 && animatorContinuousStage < 9) {
     lv_obj_set_hidden(imgBracketLeft, hidden);
     lv_obj_set_hidden(imgBracketRight, hidden);
+    lv_obj_set_hidden(stepBar, hidden);
   }
 
   // walk down list with color change, change some panel colors
@@ -660,6 +668,7 @@ void WatchFaceStarTrek::setVisible(bool visible) {
   lv_obj_set_hidden(heartbeatValue, !visible);
   lv_obj_set_hidden(stepIcon, !visible);
   lv_obj_set_hidden(stepValue, !visible);
+  lv_obj_set_hidden(stepBar, !visible);
   lv_obj_set_hidden(weatherIcon, !visible);
   lv_obj_set_hidden(temperature, !visible);
   lv_obj_set_hidden(imgBracketLeft, !visible);
