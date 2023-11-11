@@ -227,7 +227,7 @@ void DisplayApp::Refresh() {
         }
         currentScreen->OnLCDSleep();
         lv_task_handler(); // call to update display, will not be called again in Idle mode
-        vTaskDelay(100); // give time for display refresh
+        vTaskDelay(100);   // give time for display refresh
         lcd.Sleep();
         PushMessageToSystemTask(Pinetime::System::Messages::OnDisplayTaskSleeping);
         state = States::Idle;
@@ -407,8 +407,12 @@ void DisplayApp::LoadScreen(Apps app, DisplayApp::FullRefreshDirections directio
 
   switch (app) {
     case Apps::Launcher:
-      currentScreen =
-        std::make_unique<Screens::ApplicationList>(this, settingsController, batteryController, bleController, dateTimeController, filesystem);
+      currentScreen = std::make_unique<Screens::ApplicationList>(this,
+                                                                 settingsController,
+                                                                 batteryController,
+                                                                 bleController,
+                                                                 dateTimeController,
+                                                                 filesystem);
       break;
     case Apps::Motion:
       // currentScreen = std::make_unique<Screens::Motion>(motionController);
