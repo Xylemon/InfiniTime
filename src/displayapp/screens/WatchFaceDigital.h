@@ -19,6 +19,7 @@ namespace Pinetime {
     class NotificationManager;
     class HeartRateController;
     class MotionController;
+    class Timer;
   }
 
   namespace Applications {
@@ -32,7 +33,8 @@ namespace Pinetime {
                          Controllers::NotificationManager& notificationManager,
                          Controllers::Settings& settingsController,
                          Controllers::HeartRateController& heartRateController,
-                         Controllers::MotionController& motionController);
+                         Controllers::MotionController& motionController,
+                         Controllers::Timer& timer);
         ~WatchFaceDigital() override;
 
         void Refresh() override;
@@ -53,6 +55,8 @@ namespace Pinetime {
         using days = std::chrono::duration<int32_t, std::ratio<86400>>; // TODO: days is standard in c++20
         Utility::DirtyValue<std::chrono::time_point<std::chrono::system_clock, days>> currentDate;
 
+        lv_obj_t* timerIcon;
+        lv_obj_t* timeRemaining;
         lv_obj_t* label_time;
         lv_obj_t* label_time_ampm;
         lv_obj_t* label_date;
@@ -67,6 +71,7 @@ namespace Pinetime {
         Controllers::Settings& settingsController;
         Controllers::HeartRateController& heartRateController;
         Controllers::MotionController& motionController;
+        Controllers::Timer& timer;
 
         lv_task_t* taskRefresh;
         Widgets::StatusIcons statusIcons;
@@ -85,7 +90,8 @@ namespace Pinetime {
                                              controllers.notificationManager,
                                              controllers.settingsController,
                                              controllers.heartRateController,
-                                             controllers.motionController);
+                                             controllers.motionController,
+                                             controllers.timer);
       };
 
       static bool IsAvailable(Pinetime::Controllers::FS& /*filesystem*/) {

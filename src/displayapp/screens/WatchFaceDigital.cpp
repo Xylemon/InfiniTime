@@ -19,13 +19,15 @@ WatchFaceDigital::WatchFaceDigital(Controllers::DateTime& dateTimeController,
                                    Controllers::NotificationManager& notificationManager,
                                    Controllers::Settings& settingsController,
                                    Controllers::HeartRateController& heartRateController,
-                                   Controllers::MotionController& motionController)
+                                   Controllers::MotionController& motionController,
+                                   Controllers::Timer& timer)
   : currentDateTime {{}},
     dateTimeController {dateTimeController},
     notificationManager {notificationManager},
     settingsController {settingsController},
     heartRateController {heartRateController},
     motionController {motionController},
+    timer {timer},
     statusIcons(batteryController, bleController) {
 
   statusIcons.Create();
@@ -34,6 +36,16 @@ WatchFaceDigital::WatchFaceDigital(Controllers::DateTime& dateTimeController,
   lv_obj_set_style_local_text_color(notificationIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_LIME);
   lv_label_set_text_static(notificationIcon, NotificationIcon::GetIcon(false));
   lv_obj_align(notificationIcon, nullptr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+
+  timerIcon = lv_label_create(lv_scr_act(), nullptr);
+  lv_label_set_text_static(timerIcon, Symbols::hourGlass);
+  lv_obj_set_style_local_text_color(timerIcon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_color_hex(0x999999));
+  lv_obj_align(timerIcon, lv_scr_act(), LV_ALIGN_IN_TOP_MID, -32, 60);
+
+  timeRemaining = lv_label_create(lv_scr_act(), nullptr);
+  lv_obj_set_style_local_text_color(timeRemaining, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_color_hex(0x999999));
+  lv_label_set_text(timeRemaining, "00:00");
+  lv_obj_align(timeRemaining, nullptr, LV_ALIGN_IN_TOP_MID, 10, 60);
 
   label_date = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_align(label_date, lv_scr_act(), LV_ALIGN_CENTER, 0, 60);
@@ -83,6 +95,20 @@ void WatchFaceDigital::Refresh() {
   notificationState = notificationManager.AreNewNotificationsAvailable();
   if (notificationState.IsUpdated()) {
     lv_label_set_text_static(notificationIcon, NotificationIcon::GetIcon(notificationState.Get()));
+  }
+
+  if (timer.IsRunning()) {
+    auto secondsRemaining = std::chrono::duration_cast<std::chrono::seconds>(timer.GetTimeRemaining());
+
+    int minutes = secondsRemaining.count() / 60;
+    int seconds = secondsRemaining.count() % 60;
+    lv_label_set_text_fmt(timeRemaining, "%02d:%02d", minutes, seconds);
+
+    lv_obj_set_hidden(timeRemaining, false);
+    lv_obj_set_hidden(timerIcon, false);
+  } else {
+    lv_obj_set_hidden(timeRemaining, true);
+    lv_obj_set_hidden(timerIcon, true);
   }
 
   currentDateTime = std::chrono::time_point_cast<std::chrono::minutes>(dateTimeController.CurrentDateTime());
