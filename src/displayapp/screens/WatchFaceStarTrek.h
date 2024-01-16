@@ -1,12 +1,14 @@
 #pragma once
 
-#include <displayapp/screens/BatteryIcon.h>
 #include <lvgl/src/lv_core/lv_obj.h>
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include "displayapp/Controllers.h"
 #include "displayapp/screens/Screen.h"
+#include "displayapp/screens/BatteryIcon.h"
 #include "components/datetime/DateTimeController.h"
+#include "components/ble/SimpleWeatherService.h"
 #include "components/ble/BleController.h"
 #include "utility/DirtyValue.h"
 
@@ -38,7 +40,7 @@ namespace Pinetime {
                           Controllers::HeartRateController& heartRateController,
                           Controllers::MotionController& motionController,
                           Controllers::FS& filesystem,
-                          Controllers::WeatherService& weatherService);
+                          Controllers::SimpleWeatherService& weatherService);
         ~WatchFaceStarTrek() override;
 
         bool OnTouchEvent(TouchEvents event) override;
@@ -53,12 +55,12 @@ namespace Pinetime {
         Controllers::DateTime& dateTimeController;
         const Controllers::Battery& batteryController;
         const Controllers::Ble& bleController;
-        Controllers::NotificationManager& notificatioManager;
+        Controllers::NotificationManager& notificationManager;
         Controllers::Settings& settingsController;
         Controllers::HeartRateController& heartRateController;
         Controllers::MotionController& motionController;
         Controllers::FS& filesystem;
-        Controllers::WeatherService& weatherService;
+        Controllers::SimpleWeatherService& weatherService;
 
         lv_task_t* taskRefresh;
 
@@ -79,9 +81,7 @@ namespace Pinetime {
         Utility::DirtyValue<uint8_t> heartbeat {};
         Utility::DirtyValue<bool> heartbeatRunning {};
         Utility::DirtyValue<bool> notificationState {};
-        Utility::DirtyValue<int16_t> nowTemp {};
-        Utility::DirtyValue<int16_t> clouds {};
-        Utility::DirtyValue<int16_t> precip {};
+        Utility::DirtyValue<std::optional<Pinetime::Controllers::SimpleWeatherService::CurrentWeather>> currentWeather {};
 
         lv_obj_t* label_time_hour_1;
         lv_obj_t* label_time_hour_10;
@@ -184,5 +184,27 @@ namespace Pinetime {
         Controllers::Settings::StarTrekAnimateType animateStateCycler(Controllers::Settings::StarTrekAnimateType previous);
       };
     }
+
+    template <>
+    struct WatchFaceTraits<WatchFace::StarTrek> {
+      static constexpr WatchFace watchFace = WatchFace::StarTrek;
+      static constexpr const char* name = "Star Trek";
+
+      static Screens::Screen* Create(AppControllers& controllers) {
+        return new Screens::WatchFaceStarTrek(controllers.dateTimeController,
+                                              controllers.batteryController,
+                                              controllers.bleController,
+                                              controllers.notificationManager,
+                                              controllers.settingsController,
+                                              controllers.heartRateController,
+                                              controllers.motionController,
+                                              controllers.filesystem,
+                                              *controllers.weatherController);
+      };
+
+      static bool IsAvailable(Pinetime::Controllers::FS&) {
+        return true;
+      }
+    };
   }
 }

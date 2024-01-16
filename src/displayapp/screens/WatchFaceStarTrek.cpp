@@ -6,12 +6,13 @@
 #include "displayapp/screens/BleIcon.h"
 #include "displayapp/screens/NotificationIcon.h"
 #include "displayapp/screens/Symbols.h"
+#include "displayapp/screens/WeatherSymbols.h"
 #include "components/battery/BatteryController.h"
 #include "components/ble/BleController.h"
 #include "components/ble/NotificationManager.h"
 #include "components/heartrate/HeartRateController.h"
 #include "components/motion/MotionController.h"
-#include "components/ble/weather/WeatherService.h"
+#include "components/ble/SimpleWeatherService.h"
 #include "components/settings/Settings.h"
 #include "displayapp/icons/watchfacestartrek/bracket_left.c"
 #include "displayapp/icons/watchfacestartrek/bracket_right.c"
@@ -68,16 +69,16 @@ namespace {
 WatchFaceStarTrek::WatchFaceStarTrek(Controllers::DateTime& dateTimeController,
                                      const Controllers::Battery& batteryController,
                                      const Controllers::Ble& bleController,
-                                     Controllers::NotificationManager& notificatioManager,
+                                     Controllers::NotificationManager& notificationManager,
                                      Controllers::Settings& settingsController,
                                      Controllers::HeartRateController& heartRateController,
                                      Controllers::MotionController& motionController,
                                      Controllers::FS& filesystem,
-                                     Controllers::WeatherService& weatherService)
+                                     Controllers::SimpleWeatherService& weatherService)
   : dateTimeController {dateTimeController},
     batteryController {batteryController},
     bleController {bleController},
-    notificatioManager {notificatioManager},
+    notificationManager {notificationManager},
     settingsController {settingsController},
     heartRateController {heartRateController},
     motionController {motionController},
@@ -348,7 +349,7 @@ void WatchFaceStarTrek::Refresh() {
     lv_label_set_text_static(bleIcon, BleIcon::GetIcon(bleState.Get()));
   }
 
-  notificationState = notificatioManager.AreNewNotificationsAvailable();
+  notificationState = notificationManager.AreNewNotificationsAvailable();
   if (notificationState.IsUpdated()) {
     lv_label_set_text_static(notificationIcon, NotificationIcon::GetIcon(notificationState.Get()));
   }
@@ -427,34 +428,22 @@ void WatchFaceStarTrek::Refresh() {
   }
 
   if (settingsController.GetStarTrekWeather()) {
-    if (weatherService.GetCurrentTemperature()->timestamp != 0 && weatherService.GetCurrentClouds()->timestamp != 0 &&
-        weatherService.GetCurrentPrecipitation()->timestamp != 0) {
-      nowTemp = weatherService.GetCurrentTemperature()->temperature / 100;
-      clouds = weatherService.GetCurrentClouds()->amount;
-      precip = weatherService.GetCurrentPrecipitation()->amount;
-      if (weatherNeedsRefresh || nowTemp.IsUpdated()) {
-        lv_label_set_text_fmt(temperature, "%d°", nowTemp.Get());
+    currentWeather = weatherService.Current();
+    auto optCurrentWeather = currentWeather.Get();
+
+    if (optCurrentWeather) {
+      if (weatherNeedsRefresh || currentWeather.IsUpdated()) {
+        int16_t temp = optCurrentWeather->temperature;
+        if (settingsController.GetWeatherFormat() == Controllers::Settings::WeatherFormat::Imperial) {
+          temp = Controllers::SimpleWeatherService::CelsiusToFahrenheit(temp);
+        }
+        temp = temp / 100 + (temp % 100 >= 50 ? 1 : 0);
+        lv_label_set_text_fmt(temperature, "%d°", temp);
+        lv_label_set_text(weatherIcon, Symbols::GetSymbol(optCurrentWeather->iconId));
         lv_obj_realign(temperature);
-      }
-      if (weatherNeedsRefresh || clouds.IsUpdated() || precip.IsUpdated()) {
-        uint16_t c = clouds.Get();
-        uint16_t p = clouds.Get();
-        // this figuring out what icon to display could be done by weather service itself.
-        // This code is in every watchface that supports weather ;)
-        if ((c <= 30) && (p == 0)) {
-          lv_label_set_text(weatherIcon, Symbols::sun);
-        } else if ((c >= 70) && (c <= 90) && (p == 1)) {
-          lv_label_set_text(weatherIcon, Symbols::cloudSunRain);
-        } else if ((c > 90) && (p == 0)) {
-          lv_label_set_text(weatherIcon, Symbols::cloud);
-        } else if ((c > 70) && (p >= 2)) {
-          lv_label_set_text(weatherIcon, Symbols::cloudShowersHeavy);
-        } else {
-          lv_label_set_text(weatherIcon, Symbols::cloudSun);
-        };
         lv_obj_realign(weatherIcon);
+        weatherNeedsRefresh = false;
       }
-      weatherNeedsRefresh = false;
     } else {
       lv_label_set_text_static(temperature, "--");
       lv_label_set_text(weatherIcon, "");
