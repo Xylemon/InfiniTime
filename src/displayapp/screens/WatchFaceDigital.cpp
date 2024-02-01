@@ -22,7 +22,7 @@ WatchFaceDigital::WatchFaceDigital(Controllers::DateTime& dateTimeController,
                                    Controllers::Settings& settingsController,
                                    Controllers::HeartRateController& heartRateController,
                                    Controllers::MotionController& motionController,
-                                   Controllers::SimpleWeatherService& weatherService),
+                                   Controllers::SimpleWeatherService& weatherService,
                                    Controllers::Timer& timer)
   : currentDateTime {{}},
     dateTimeController {dateTimeController},
