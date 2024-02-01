@@ -6,6 +6,11 @@ Fast open-source firmware for the [PineTime smartwatch](https://www.pine64.org/p
 
 This is my personal fork with patches from the community. Here I can use Github actions and provide binaries for friends and myself. Please see [InfiniTime's](https://github.com/InfiniTimeOrg/InfiniTime) main repo to contribute back to this great project.
 
+Changes:
+
+- Re-enable the Motion app
+- Re-enable the Weather app
+
 Currently using the following patches:
 
 - [Star Trek Watchface](https://github.com/InfiniTimeOrg/InfiniTime/pull/1462) by [ljahn](https://github.com/ljahn)
