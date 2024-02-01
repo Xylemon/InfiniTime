@@ -16,6 +16,7 @@ Currently using the following patches:
 - [Star Trek Watchface](https://github.com/InfiniTimeOrg/InfiniTime/pull/1462) by [ljahn](https://github.com/ljahn)
 - [Digital Watchface Timer Countdown](https://github.com/InfiniTimeOrg/InfiniTime/pull/1967) by [JustScott](https://github.com/JustScott)
 - [Simple Calculator](https://github.com/InfiniTimeOrg/InfiniTime/pull/1483) by [minacode](https://github.com/minacode)
+- [Auto Sleep](https://github.com/InfiniTimeOrg/InfiniTime/pull/1461) by [Boteium](https://github.com/Boteium)
 
 Hoping to add:
 

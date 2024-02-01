@@ -38,6 +38,12 @@ namespace Pinetime {
       enum class PTSWeather : uint8_t { On, Off };
       enum class StarTrekAnimateType { None, Start, Continuous, All };
 
+      struct QuietHour {
+        bool auto_toggle = false;
+        // 30 minutes increment
+        uint8_t time = 0;
+      };
+
       struct PineTimeStyle {
         Colors ColorTime = Colors::Teal;
         Colors ColorBar = Colors::Teal;
@@ -67,6 +73,19 @@ namespace Pinetime {
 
       void Init();
       void SaveSettings();
+
+      void SetQuietHour(QuietHour quietHour[2]) {
+        for (uint8_t i = 0; i < 2; i++) {
+          if (quietHour[i].auto_toggle != settings.quietHour[i].auto_toggle || quietHour[i].time != settings.quietHour[i].time) {
+            settingsChanged = true;
+          }
+          settings.quietHour[i] = quietHour[i];
+        }
+      };
+
+      QuietHour* GetQuietHour() {
+        return settings.quietHour;
+      };
 
       void SetWatchFace(Pinetime::Applications::WatchFace face) {
         if (face != settings.watchFace) {
@@ -248,11 +267,18 @@ namespace Pinetime {
         if (status != settings.notificationStatus) {
           settingsChanged = true;
         }
+        if (settings.notificationStatus != Notification::Sleep) {
+          prevNotificationStatus = settings.notificationStatus;
+        }
         settings.notificationStatus = status;
       };
 
       Notification GetNotificationStatus() const {
         return settings.notificationStatus;
+      };
+
+      Notification GetPrevNotificationStatus() const {
+        return prevNotificationStatus;
       };
 
       void SetScreenTimeOut(uint32_t timeout) {
@@ -353,6 +379,7 @@ namespace Pinetime {
         ChimesOption chimesOption = ChimesOption::None;
 
         PineTimeStyle PTS;
+        QuietHour quietHour[2];
 
         WatchFaceInfineat watchFaceInfineat;
 
@@ -366,6 +393,7 @@ namespace Pinetime {
 
       SettingsData settings;
       bool settingsChanged = false;
+      Notification prevNotificationStatus = Notification::On;
 
       uint8_t appMenu = 0;
       uint8_t settingsMenu = 0;
