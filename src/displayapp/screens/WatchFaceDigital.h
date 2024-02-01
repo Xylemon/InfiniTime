@@ -99,7 +99,7 @@ namespace Pinetime {
                                              controllers.settingsController,
                                              controllers.heartRateController,
                                              controllers.motionController,
-                                             *controllers.weatherController),
+                                             *controllers.weatherController,
                                              controllers.timer);
       };
 
