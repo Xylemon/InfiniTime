@@ -30,6 +30,7 @@ namespace Pinetime {
       Calculator,
       Steps,
       Dice,
+      Weather,
       PassKey,
       QuickSettings,
       Settings,
@@ -44,8 +45,7 @@ namespace Pinetime {
       SettingQuietHour,
       SettingShakeThreshold,
       SettingBluetooth,
-      Error,
-      Weather
+      Error
     };
 
     enum class WatchFace : uint8_t {
