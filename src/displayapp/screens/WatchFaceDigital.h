@@ -37,7 +37,6 @@ namespace Pinetime {
                          Controllers::MotionController& motionController,
                          Controllers::SimpleWeatherService& weather,
                          Controllers::Timer& timer);
-
         ~WatchFaceDigital() override;
 
         void Refresh() override;

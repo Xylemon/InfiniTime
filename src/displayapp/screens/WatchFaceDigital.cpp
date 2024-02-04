@@ -32,8 +32,7 @@ WatchFaceDigital::WatchFaceDigital(Controllers::DateTime& dateTimeController,
     motionController {motionController},
     weatherService {weatherService},
     timer {timer},
-
-    statusIcons(batteryController, bleController) {
+    statusIcons(batteryController, bleController, timer) {
 
   statusIcons.Create();
 
