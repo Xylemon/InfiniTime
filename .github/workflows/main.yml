@@ -85,7 +85,7 @@ jobs:
 
     - name: Get InfiniSim repo
       run:  |
-        git clone https://github.com/InfiniTimeOrg/InfiniSim.git --depth 1 --branch main
+        git clone https://github.com/Xylemon/InfiniSim.git --depth 1 --branch main
         git -C InfiniSim submodule update --init lv_drivers
 
     - name: CMake
