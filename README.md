@@ -36,6 +36,9 @@ Changes:
 
 - [Calendar App](https://github.com/InfiniTimeOrg/InfiniTime/pull/1958) by [JustScott](https://github.com/JustScott)
 
+- [WatchFaceDigital: Move weather widget away from status icons](https://github.com/InfiniTimeOrg/InfiniTime/pull/1998) by [vkareh](https://github.com/vkareh)
+
+- [Alarm: Replace clock icon with bell](https://github.com/InfiniTimeOrg/InfiniTime/pull/1996) by [vkareh](https://github.com/vkareh)
 
 Wishlist:
 
