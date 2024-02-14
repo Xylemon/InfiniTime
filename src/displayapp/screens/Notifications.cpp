@@ -273,7 +273,7 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
                                                        nextNotification.Message(),
                                                        currentIdx + 1,
                                                        nextNotification.category,
-                                                       previousNotification.timeArrived,
+                                                       nextNotification.timeArrived,
                                                        std::chrono::system_clock::to_time_t(this->dateTimeController.CurrentDateTime()),
                                                        notificationManager.NbNotifications(),
                                                        alertNotificationService,
