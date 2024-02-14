@@ -57,7 +57,7 @@ namespace Pinetime {
 
         // used for notification stack icons
         static constexpr const char* questionCircle = "\xEF\x81\x99"; // F059
-        static constexpr const char* bell = "\xEF\x83\xB3";           // F0F3
+//        static constexpr const char* bell = "\xEF\x83\xB3";           // F0F3
         static constexpr const char* envelope = "\xEF\x83\xA0";       // F0E0
         static constexpr const char* newspaper = "\xEF\x87\xAA";      // F1EA
         static constexpr const char* smsBubble = "\xEF\x9F\x8D";      // F7CD
