@@ -6,7 +6,7 @@ Fast open-source firmware for the [PineTime smartwatch](https://www.pine64.org/p
 
 This is my personal fork with patches from the community. Here I can use Github actions and provide binaries for friends and myself. Please see [InfiniTime's](https://github.com/InfiniTimeOrg/InfiniTime) main repo to contribute back to this great project.
 
-Changes:
+## Changes:
 
 - Re-enable the Motion app
 
@@ -36,19 +36,21 @@ Changes:
 
 - [Calendar App](https://github.com/InfiniTimeOrg/InfiniTime/pull/1958) by [JustScott](https://github.com/JustScott)
 
-- [WatchFaceDigital: Move weather widget away from status icons](https://github.com/InfiniTimeOrg/InfiniTime/pull/1998) by [vkareh](https://github.com/vkareh)
+- [Weather Forecast App](https://github.com/InfiniTimeOrg/InfiniTime/pull/1995) by [vkareh](https://github.com/vkareh)
 
-- [Alarm: Replace clock icon with bell](https://github.com/InfiniTimeOrg/InfiniTime/pull/1996) by [vkareh](https://github.com/vkareh)
+- [Add option to clear all notifications](https://github.com/InfiniTimeOrg/InfiniTime/pull/2000) by [KaffeinatedKat](https://github.com/KaffeinatedKat)
 
-Wishlist:
+- [Blue icon when BT is connected, grey when not](https://github.com/InfiniTimeOrg/InfiniTime/pull/1974) by [riban-bw](https://github.com/riban-bw)
+
+## Wishlist:
+
+- [Timer: Remember last timer setting](https://github.com/InfiniTimeOrg/InfiniTime/pull/2013) by [tausen](https://github.com/tausen)
+
+- [Add setting for auto-opening apps](https://github.com/InfiniTimeOrg/InfiniTime/pull/2004) by [vkareh](https://github.com/vkareh)
 
 - [Show alarm controller state in status icons](https://github.com/InfiniTimeOrg/InfiniTime/pull/1884) by [jmlich](https://github.com/jmlich)
 
 - [settings: Add global widget selection](https://github.com/InfiniTimeOrg/InfiniTime/pull/1959) by [vkareh](https://github.com/vkareh)
-
-- [Change Acceleration Values to milli-g units](https://github.com/InfiniTimeOrg/InfiniTime/pull/1950) by [jones139](https://github.com/jones139)
-
-- [Weather Forecast App](https://github.com/InfiniTimeOrg/InfiniTime/pull/1995) by [vkareh](https://github.com/vkareh)
 
 - [Add StopWatchController](https://github.com/InfiniTimeOrg/InfiniSim/pull/75) by [pptime02](https://github.com/pptime02)
 
