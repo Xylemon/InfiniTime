@@ -10,6 +10,7 @@ constexpr uint8_t NotificationManager::MessageSize;
 void NotificationManager::Push(NotificationManager::Notification&& notif) {
   notif.id = GetNextId();
   notif.valid = true;
+  notif.timeArrived = std::chrono::system_clock::to_time_t(dateTimeController.CurrentDateTime());
   newNotification = true;
   if (beginIdx > 0) {
     --beginIdx;
@@ -59,6 +60,13 @@ NotificationManager::Notification::Idx NotificationManager::IndexOf(Notification
     }
   }
   return size;
+}
+
+NotificationManager::Categories NotificationManager::CategoryAt(Notification::Idx idx) const {
+  if (idx >= this->size) {
+    return NotificationManager::Categories::Unknown;
+  }
+  return this->At(idx).category;
 }
 
 NotificationManager::Notification NotificationManager::Get(NotificationManager::Notification::Id id) const {

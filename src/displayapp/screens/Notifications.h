@@ -4,9 +4,11 @@
 #include <FreeRTOS.h>
 #include <cstdint>
 #include <memory>
+#include <chrono>
 #include "displayapp/screens/Screen.h"
 #include "components/ble/NotificationManager.h"
 #include "components/motor/MotorController.h"
+#include "components/datetime/DateTimeController.h"
 #include "systemtask/SystemTask.h"
 
 namespace Pinetime {
@@ -24,6 +26,7 @@ namespace Pinetime {
                                Pinetime::Controllers::NotificationManager& notificationManager,
                                Pinetime::Controllers::AlertNotificationService& alertNotificationService,
                                Pinetime::Controllers::MotorController& motorController,
+                               Pinetime::Controllers::DateTime& dateTimeController,
                                System::SystemTask& systemTask,
                                Modes mode);
         ~Notifications() override;
@@ -39,14 +42,18 @@ namespace Pinetime {
         public:
           NotificationItem(Pinetime::Controllers::AlertNotificationService& alertNotificationService,
                            Pinetime::Controllers::MotorController& motorController,
+                           Pinetime::Controllers::NotificationManager& notificationManager,
                            Notifications *parent);
           NotificationItem(const char* title,
                            const char* msg,
                            uint8_t notifNr,
                            Controllers::NotificationManager::Categories,
+                           std::time_t timeArrived,
+                           std::time_t timeNow,
                            uint8_t notifNb,
                            Pinetime::Controllers::AlertNotificationService& alertNotificationService,
                            Pinetime::Controllers::MotorController& motorController,
+                           Pinetime::Controllers::NotificationManager& notificationManager,
                            Notifications *parent);
           ~NotificationItem();
 
@@ -73,6 +80,7 @@ namespace Pinetime {
           lv_obj_t* labelBtnClearAll;
           Pinetime::Controllers::AlertNotificationService& alertNotificationService;
           Pinetime::Controllers::MotorController& motorController;
+          Pinetime::Controllers::NotificationManager& notificationManager;
           Notifications *parent;
 
           bool running = true;
@@ -82,6 +90,7 @@ namespace Pinetime {
         DisplayApp* app;
         Pinetime::Controllers::NotificationManager& notificationManager;
         Pinetime::Controllers::AlertNotificationService& alertNotificationService;
+        Pinetime::Controllers::DateTime& dateTimeController;
         Pinetime::Controllers::MotorController& motorController;
         System::SystemTask& systemTask;
         Modes mode = Modes::Normal;
