@@ -89,7 +89,7 @@ void Notifications::Refresh() {
 
   } else if (mode == Modes::Preview && dismissingNotification) {
     running = false;
-    currentItem = std::make_unique<NotificationItem>(alertNotificationService, motorController, this);
+    currentItem = std::make_unique<NotificationItem>(alertNotificationService, motorController, notificationManager, this);
 
   } else if (dismissingNotification) {
     dismissingNotification = false;
