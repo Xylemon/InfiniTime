@@ -42,6 +42,8 @@ This is my personal fork with patches from the community. Here I can use Github 
 
 - [Blue icon when BT is connected, grey when not](https://github.com/InfiniTimeOrg/InfiniTime/pull/1974) by [riban-bw](https://github.com/riban-bw)
 
+- [Add Notification icon stack](https://github.com/Tiggilyboo/InfiniTime/commit/23ef551bdee2cbd8bfd520b62ecdbdcc7a311736) by [Brod8362](https://github.com/Brod8362) and [Tiggilyboo](https://github.com/Tiggilyboo)
+
 ## Wishlist:
 
 - [Timer: Remember last timer setting](https://github.com/InfiniTimeOrg/InfiniTime/pull/2013) by [tausen](https://github.com/tausen)
@@ -55,8 +57,6 @@ This is my personal fork with patches from the community. Here I can use Github 
 - [Add StopWatchController](https://github.com/InfiniTimeOrg/InfiniSim/pull/75) by [pptime02](https://github.com/pptime02)
 
 - [Stopwatch: add persistence](https://github.com/InfiniTimeOrg/InfiniTime/pull/1410) by [pptime02](https://github.com/pptime02)
-
-- [Add Notification icon stack](https://github.com/Tiggilyboo/InfiniTime/commit/23ef551bdee2cbd8bfd520b62ecdbdcc7a311736) by [Brod8362](https://github.com/Brod8362) and [Tiggilyboo](https://github.com/Tiggilyboo)
 
 - [QR code application](https://github.com/InfiniTimeOrg/InfiniTime/pull/181) by [petterhs](https://github.com/petterhs)
 
