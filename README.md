@@ -56,7 +56,7 @@ This is my personal fork with patches from the community. Here I can use Github 
 
 - [Stopwatch: add persistence](https://github.com/InfiniTimeOrg/InfiniTime/pull/1410) by [pptime02](https://github.com/pptime02)
 
-- [Add Notification icon stack](https://github.com/InfiniTimeOrg/InfiniTime/pull/1697) by [Brod8362](https://github.com/Brod8362)
+- [Add Notification icon stack](https://github.com/Tiggilyboo/InfiniTime/commit/23ef551bdee2cbd8bfd520b62ecdbdcc7a311736) by [Brod8362](https://github.com/Brod8362) and [Tiggilyboo](https://github.com/Tiggilyboo)
 
 - [QR code application](https://github.com/InfiniTimeOrg/InfiniTime/pull/181) by [petterhs](https://github.com/petterhs)
 
