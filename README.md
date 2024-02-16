@@ -10,6 +10,8 @@ This is my personal fork with patches from the community. Here I can use Github 
 
 - Re-enable the Motion app
 
+- Rearrange app listings
+
 - [Star Trek Watch Face](https://github.com/InfiniTimeOrg/InfiniTime/pull/1462) by [ljahn](https://github.com/ljahn)
 
 - [Digital Watchface Timer Countdown](https://github.com/InfiniTimeOrg/InfiniTime/pull/1967) by [JustScott](https://github.com/JustScott)
@@ -43,6 +45,10 @@ This is my personal fork with patches from the community. Here I can use Github 
 - [Blue icon when BT is connected, grey when not](https://github.com/InfiniTimeOrg/InfiniTime/pull/1974) by [riban-bw](https://github.com/riban-bw)
 
 - [Add Notification icon stack](https://github.com/Tiggilyboo/InfiniTime/commit/23ef551bdee2cbd8bfd520b62ecdbdcc7a311736) by [Brod8362](https://github.com/Brod8362) and [Tiggilyboo](https://github.com/Tiggilyboo)
+
+- [lowersleep: Improve algorithm by checking wrist angle](https://github.com/InfiniTimeOrg/InfiniTime/pull/2014) by [FintasticMan](https://github.com/FintasticMan)
+
+- [Heartrate measurements in background](https://github.com/InfiniTimeOrg/InfiniTime/pull/1718/) by [patricgruber](https://github.com/patricgruber)
 
 ## Wishlist:
 
